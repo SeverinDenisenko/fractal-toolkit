@@ -48,7 +48,7 @@ contains
       m = n / 2 + 1
    end function berg_psd_size
 
-   ! Calculate frequencies from 0 up to 2 * Nyquist frequency for time step `dt`
+   ! Calculate normalized (0 to 1) frequencies from 0 up to 2 * Nyquist frequency for time step `dt`
    subroutine freq_full(f, dt)
       real(wp), intent(out) :: f(:)
       real(wp), intent(in) :: dt
@@ -61,7 +61,7 @@ contains
       f = [(step * i / n, i = 0, n - 1)]
    end subroutine freq_full
 
-   ! Calculate frequencies from 0 up to Nyquist frequency (including) for time step `dt`
+   ! Calculate normalized (0 to 1) frequencies from 0 up to Nyquist frequency (including) for time step `dt`
    subroutine freq_nyquist(f, dt)
       real(wp), intent(out) :: f(:)
       real(wp), intent(in) :: dt
@@ -74,7 +74,7 @@ contains
       f = [(nyquist * i / (n - 1), i = 0, n - 1)]
    end subroutine freq_nyquist
 
-   ! Calculate frequency response of an AR filter `phi` on frequencies `f` (0 to pi)
+   ! Calculate frequency response of an AR filter `phi` on frequencies `f` (0 to 1)
    subroutine ar_freq_response(phi, f, H)
       real(wp), intent(in) :: phi(:)
       real(wp), intent(in) :: f(:)
