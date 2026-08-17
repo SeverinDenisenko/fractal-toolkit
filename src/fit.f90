@@ -18,7 +18,7 @@ contains
       real(wp) :: solution(2)
       integer :: n
 
-      call check(size(x) == size(y), msg="linregress: size missmatch")
+      call check(size(x) == size(y), msg="linregress: size mismatch")
       n = size(x)
       allocate(M(n, 2))
 

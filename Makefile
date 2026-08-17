@@ -84,7 +84,12 @@ test: $(TEST_EXES)
 	@echo "All tests passed."
 
 # Explicit module dependencies (for parallel builds)
-# TODO
+$(OBJ_DIR)/fit.o: $(OBJ_DIR)/precision.o
+$(OBJ_DIR)/int_math.o: | $(OBJ_DIR) $(MOD_DIR)
+$(OBJ_DIR)/conv.o: $(OBJ_DIR)/precision.o
+$(OBJ_DIR)/frac.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/conv.o
+$(OBJ_DIR)/gen_series.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/frac.o
+$(OBJ_DIR)/spectra.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/int_math.o
 
 # Create directories
 $(OBJ_DIR) $(MOD_DIR) $(LIB_DIR) $(BIN_DIR):

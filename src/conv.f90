@@ -17,7 +17,7 @@ contains
       nb = size(b)
       ny = nx + nb - 1
 
-      call check(ny == size(y), "conv1d_full: size missmatch")
+      call check(ny == size(y), "conv1d_full: size mismatch")
 
       do ix=1, nx
          do ib=1, nb
@@ -40,7 +40,7 @@ contains
       nb = size(b)
       ny = nx
 
-      call check(ny == size(y), "conv1d_same: size missmatch")
+      call check(ny == size(y), "conv1d_same: size mismatch")
 
       do ix=1, nx
          do ib=1, nb

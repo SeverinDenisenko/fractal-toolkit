@@ -11,13 +11,13 @@ contains
       real(wp), intent(in) :: order
       real(wp), intent(out) :: coeff(:)
 
-      integer :: len
+      integer :: n
       integer :: i
 
-      len = size(coeff)
+      n = size(coeff)
 
       coeff(1) = 1.0_wp
-      do i = 1, len - 1
+      do i = 1, n - 1
          coeff(i + 1) = -coeff(i) / i * (order - i + 1)
       end do
    end subroutine frac_diff_coeff
@@ -39,11 +39,11 @@ contains
       real(wp), intent(in) :: series_in(:)
       real(wp), intent(out) :: series_out(:)
 
-      integer :: len
+      integer :: n
       real(wp), allocatable :: coeff(:)
 
-      len = size(series_in)
-      allocate(coeff(len))
+      n = size(series_in)
+      allocate(coeff(n))
 
       call frac_diff_coeff(coeff, order)
       call frac_diff(coeff, series_in, series_out)

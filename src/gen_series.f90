@@ -18,12 +18,12 @@ contains
       integer, optional, intent(in) :: seed
 
       integer :: seed_get
-      integer :: len
+      integer :: n
 
-      len = size(array)
+      n = size(array)
       call random_seed(optval(seed, default_seed), seed_get)
 
-      array(:) = rvs_uniform(optval(mu, default_mu) - optval(sigma, default_sigma) / 2.0_wp, optval(sigma, default_sigma), len)
+      array(:) = rvs_uniform(optval(mu, default_mu) - optval(sigma, default_sigma) / 2.0_wp, optval(mu, default_mu) + optval(sigma, default_sigma) / 2.0_wp, n)
    end subroutine gen_series_white
 
    subroutine gen_series_fgn(array, mu, sigma, seed)
@@ -33,13 +33,13 @@ contains
       integer, optional, intent(in) :: seed
 
       integer :: seed_get
-      integer :: len
+      integer :: n
 
-      len = size(array)
+      n = size(array)
 
       call random_seed(optval(seed, default_seed), seed_get)
 
-      array(:) = rvs_normal(optval(mu, default_mu), optval(sigma, default_sigma), len)
+      array(:) = rvs_normal(optval(mu, default_mu), optval(sigma, default_sigma), n)
    end subroutine gen_series_fgn
 
    ! Produces series by integrating fgn fractionaly
@@ -48,11 +48,11 @@ contains
       real(wp), intent(in) :: intorder
       integer, optional, intent(in) :: seed_in
 
-      integer :: len
+      integer :: n
       real(wp), allocatable :: fgn(:)
 
-      len = size(series)
-      allocate(fgn(len))
+      n = size(series)
+      allocate(fgn(n))
 
       call gen_series_fgn(fgn, 0.0_wp, 1.0_wp, seed_in)
       call frac_diff_simple(-intorder, fgn, series)
@@ -60,21 +60,21 @@ contains
       deallocate(fgn)
    end subroutine gen_series_fgn_integrate
 
-   ! Produces series by integrating fgn fractionaly
+   ! Produces series by integrating white noise fractionally
    subroutine gen_series_white_integrate(series, intorder, seed_in)
       real(wp), intent(out) :: series(:)
       real(wp), intent(in) :: intorder
       integer, optional, intent(in) :: seed_in
 
-      integer :: len
-      real(wp), allocatable :: fgn(:)
+      integer :: n
+      real(wp), allocatable :: noise(:)
 
-      len = size(series)
-      allocate(fgn(len))
+      n = size(series)
+      allocate(noise(n))
 
-      call gen_series_white(fgn, 0.0_wp, 1.0_wp, seed_in)
-      call frac_diff_simple(-intorder, fgn, series)
+      call gen_series_white(noise, 0.0_wp, 1.0_wp, seed_in)
+      call frac_diff_simple(-intorder, noise, series)
 
-      deallocate(fgn)
+      deallocate(noise)
    end subroutine gen_series_white_integrate
 end module gen_series

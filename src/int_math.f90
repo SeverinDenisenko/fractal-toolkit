@@ -1,9 +1,12 @@
 module int_math
+   use stdlib_error, only: check
    implicit none
 
 contains
    integer function up2power(n) result(x)
       integer, intent(in) :: n
+
+      call check(n > 0, msg="up2power: n must be positive")
       x = n - 1
       x = ior(x, ishft(x, -1))
       x = ior(x, ishft(x, -2))

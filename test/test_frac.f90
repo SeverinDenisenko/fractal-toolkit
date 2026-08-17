@@ -12,13 +12,13 @@ program frac_test
 
    call frac_diff_coeff(coeff, 0.0_wp)
    call frac_diff(coeff, data, diff)
-   call check(sum(diff - [0.0_wp, 1.0_wp, 2.0_wp, 3.0_wp, 4.0_wp]) < 1e-5_wp)
+   call check(maxval(abs(diff - [0.0_wp, 1.0_wp, 2.0_wp, 3.0_wp, 4.0_wp])) < 1e-5_wp)
 
    call frac_diff_coeff(coeff, 1.0_wp)
    call frac_diff(coeff, data, diff)
-   call check(sum(diff - [0.0_wp, 1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]) < 1e-5_wp)
+   call check(maxval(abs(diff - [0.0_wp, 1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp])) < 1e-5_wp)
 
    call frac_diff_coeff(coeff, -1.0_wp)
    call frac_diff(coeff, data, diff)
-   call check(sum(diff - [0.0_wp, 1.0_wp, 3.0_wp, 6.0_wp, 9.0_wp]) < 1e-5_wp)
+   call check(maxval(abs(diff - [0.0_wp, 1.0_wp, 3.0_wp, 6.0_wp, 9.0_wp])) < 1e-5_wp)
 end program frac_test
