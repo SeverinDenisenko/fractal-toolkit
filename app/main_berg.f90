@@ -1,32 +1,65 @@
 program main_berg
    use stdlib_error, only: check
-   use generators, only: generte_white_integrate, generte_fgn, generte_fgn_integrate, generte_white
-   use spectra, only: berg_psd, berg_psd_size
-   use solvers, only: powerregress
-   use io, only: write_table_file
-   use hurst, only: slope_to_hurst
+   use io, only: read_single_column
+   use hurst, only: estimate_hurst_berg
+   use version, only: max_ver_len, ver
    use precision, only: wp
    implicit none
 
-   integer :: n, m, t, n1
-   real(wp), allocatable :: data(:)
-   real(wp), allocatable :: P(:)
-   real(wp), allocatable :: f(:)
-   real(wp) :: a, c, sigma2, H
+   character(len=128) :: arg
+   character(len=128) :: input
+   character(len=max_ver_len) :: v
+   real(wp), allocatable :: series(:)
+   real(wp) :: H, a, H_err, a_err, sigma2
+   integer :: i
 
-   n = 10000
-   m = n / 20
-   n1 = berg_psd_size(n)
-   t = n / 100
-   allocate(data(n), P(n1), f(n1))
+   input = 'input.dat'
 
-   call generte_fgn_integrate(data, 0.3_wp)
-   call berg_psd(f, P, data, 1.0_wp, m)
+   i = 1
+   do while (i <= command_argument_count())
+      call get_command_argument(i, arg)
 
-   call powerregress(f(t:n1-t), P(t:n1-t), a, c, sigma2)
+      select case (arg)
+       case ('-v', '--version')
+         call ver(v)
+         print '(2a)', 'version ', v
+         stop
+       case ('-h', '--help')
+         call print_help()
+         stop
+       case ('-i', '--input')
+         if (i >= command_argument_count()) then
+            print '(a)', 'Error: missing value for -o'
+            stop 1
+         end if
+         i = i + 1
+         call get_command_argument(i, arg)
+         read(arg, *) input
+       case default
+         print '(a,a,/)', 'Unrecognized command-line option: ', arg
+         call print_help()
+         stop 1
+      end select
+      i = i + 1
+   end do
 
-   H = slope_to_hurst(-a)
-   write (*,*) H, sigma2
+   call read_single_column(input, series)
 
-   call write_table_file('output.dat', f, P)
+   call estimate_hurst_berg(series, H, a, H_err, a_err, sigma2)
+
+   print '("H =      ", F6.3)', H
+   print '("a =      ", F6.3)', a
+   print '("dH =     ", F6.3)', H_err
+   print '("da =     ", F6.3)', a_err
+   print '("sigma2 = ", F6.3)', sigma2
+contains
+   subroutine print_help()
+      print '(a)', 'usage: berg [options]'
+      print '(a)', ''
+      print '(a)', 'cmdline options:'
+      print '(a)', ''
+      print '(a)', '  -v, --version     print version information and exit'
+      print '(a)', '  -h, --help        print usage information and exit'
+      print '(a)', '  -i, --input       select input file'
+   end subroutine print_help
 end program main_berg

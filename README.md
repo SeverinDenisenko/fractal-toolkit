@@ -25,4 +25,5 @@ Library contains:
 ## Programs
 
 Programs contain:
-* Generators for time series
+* Generators for fractal time series
+* Hurst exponent estimation

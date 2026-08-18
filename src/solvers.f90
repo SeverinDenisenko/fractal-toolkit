@@ -1,24 +1,35 @@
 module solvers
    use precision, only: wp
-   use stdlib_linalg, only: solve_lstsq
+   use stdlib_linalg, only: solve_lstsq, solve, inv
    use stdlib_error, only: check
-   use stdlib_stats, only: var
    implicit none
 
 contains
+   ! Compute variation for residuals with `m` freedom degrees
+   real(wp) function residuals_var(x, y, m) result(sigma2)
+      real(wp), intent(in) :: x(:), y(:)
+      integer, intent(in) :: m
+
+      integer :: n
+
+      call check(size(x) == size(y), msg="residuals_var: size mismatch")
+      n = size(x)
+
+      sigma2 = sum((x - y)**2)/(n - m)
+   end function residuals_var
+
    ! Solves y = x * k + a
-   subroutine linregress(x, y, k, a, sigma2)
-      real(wp), intent(in) :: x(:)
-      real(wp), intent(in) :: y(:)
-      real(wp), intent(out) :: k
-      real(wp), intent(out) :: a
-      real(wp), optional, intent(out) :: sigma2
+   subroutine linregress(x, y, k, a, sigma2, k_err, a_err)
+      real(wp), intent(in) :: x(:), y(:)
+      real(wp), intent(out) :: k, a
+      real(wp), optional, intent(out) :: sigma2, k_err, a_err
 
       real(wp), allocatable :: M(:,:)
-      real(wp) :: solution(2)
+      real(wp) :: solution(2), cov_matrix(2,2)
       integer :: n
 
       call check(size(x) == size(y), msg="linregress: size mismatch")
+
       n = size(x)
       allocate(M(n, 2))
 
@@ -31,21 +42,29 @@ contains
       a = solution(2)
 
       if(present(sigma2)) then
-         sigma2 = sum(((k * x + a) - y)**2) / (n - 2)
+         sigma2 = residuals_var(k * x + a, y, 2)
+
+         cov_matrix = sigma2 * inv(matmul(transpose(M), M))
+
+         if(present(k_err)) then
+            k_err = sqrt(cov_matrix(1,1))
+         end if
+
+         if(present(k_err)) then
+            a_err = sqrt(cov_matrix(2,2))
+         end if
       end if
    end subroutine linregress
 
    ! Solves y = c * x^a
-   subroutine powerregress(x, y, a, c, sigma2)
+   subroutine powerregress(x, y, a, c, sigma2, a_err, c_err)
       real(wp), intent(in) :: x(:)
       real(wp), intent(in) :: y(:)
-      real(wp), intent(out) :: a
-      real(wp), intent(out) :: c
-      real(wp), optional, intent(out) :: sigma2
+      real(wp), intent(out) :: a, c
+      real(wp), optional, intent(out) :: sigma2, a_err, c_err
 
       real(wp), allocatable :: M(:,:)
-      real(wp) :: solution(2)
-      real(wp), allocatable :: log_x(:), log_y(:)
+      real(wp) :: solution(2), cov_matrix(2,2)
       integer :: n
 
       call check(size(x) == size(y), msg="powerregress: size mismatch")
@@ -55,21 +74,27 @@ contains
       call check(all(y > 0.0_wp), msg="powerregress: y must be positive")
 
       allocate(M(n, 2))
-      allocate(log_x(n), log_y(n))
 
-      log_x = log(x)
-      log_y = log(y)
-
-      M(:, 1) = log_x(:)
+      M(:, 1) = log(x)
       M(:, 2) = 1.0_wp
 
-      call solve_lstsq(M, log_y, x=solution)
+      call solve_lstsq(M, log(y), x=solution)
 
       a = solution(1)
       c = exp(solution(2))
 
       if(present(sigma2)) then
-         sigma2 = sum((a * log_x + solution(2) - log_y)**2) / (n - 2)
+         sigma2 = residuals_var(a * log(x) + log(c), log(y), 2)
+
+         cov_matrix = sigma2 * inv(matmul(transpose(M), M))
+
+         if(present(a_err)) then
+            a_err = sqrt(cov_matrix(1,1))
+         end if
+
+         if(present(c_err)) then
+            c_err = sqrt(cov_matrix(2,2))
+         end if
       end if
    end subroutine powerregress
 end module solvers

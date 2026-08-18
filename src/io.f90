@@ -26,4 +26,32 @@ contains
       end do
       close(default_unit)
    end subroutine write_table_file
+
+   subroutine read_single_column(name, array)
+      character(len=*), intent(in) :: name
+      real(wp), allocatable, intent(out) :: array(:)
+
+      integer :: i, ios, n_lines
+      real(wp) :: temp
+
+      open(unit=default_unit, file=name, status='old', iostat=ios)
+      call check(ios == 0, msg="read_single_column: error opening file")
+
+      n_lines = 0
+      do
+         read(default_unit, *, iostat=ios) temp
+         if (ios /= 0) exit
+         n_lines = n_lines + 1
+      end do
+
+      rewind(default_unit)
+
+      allocate(array(n_lines))
+
+      do i = 1, n_lines
+         read(default_unit, *) array(i)
+      end do
+
+      close(default_unit)
+   end subroutine read_single_column
 end module io
