@@ -1,6 +1,6 @@
 module spectra
    use precision, only: wp
-   use int_math, only: up2power
+   use intergers, only: up2power
    use stdlib_linalg, only: solve_lstsq
    use stdlib_error, only: check
    use stdlib_stats, only: var
@@ -142,5 +142,4 @@ contains
       P = P / (f(2) - f(1))
       P = P / sum(P) * var(S, corrected=.false.)
    end subroutine berg_psd
-
 end module spectra

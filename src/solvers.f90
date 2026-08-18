@@ -1,4 +1,4 @@
-module fit
+module solvers
    use precision, only: wp
    use stdlib_linalg, only: solve_lstsq
    use stdlib_error, only: check
@@ -72,4 +72,4 @@ contains
          sigma2 = sum((a * log_x + solution(2) - log_y)**2) / (n - 2)
       end if
    end subroutine powerregress
-end module fit
+end module solvers

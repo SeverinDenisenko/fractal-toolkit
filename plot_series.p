@@ -1,0 +1,6 @@
+set xlabel "t"
+set ylabel "V"
+set title "Series"
+set datafile commentschars "#"
+plot "output.dat" using 1 with points pt 7 ps 0.5 title "V"
+pause -1 "Press Enter to close"

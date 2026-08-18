@@ -1,7 +1,7 @@
-program fit_test
+program solvers_test
    use precision, only: wp
    use stdlib_error, only: check
-   use fit, only: linregress, powerregress
+   use solvers, only: linregress, powerregress
    implicit none
 
    real(wp) :: x(3)
@@ -36,4 +36,4 @@ program fit_test
    call check(abs(sigma2 - 0.0_wp) < 1e-5_wp)
    call check(abs(c - 1.0_wp) < 1e-5_wp)
    call check(abs(a - 2.0_wp) < 1e-5_wp)
-end program fit_test
+end program solvers_test
