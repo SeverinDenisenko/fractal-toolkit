@@ -11,9 +11,10 @@ program main_berg
    character(len=max_ver_len) :: v
    real(wp), allocatable :: series(:)
    real(wp) :: H, a, H_err, a_err, sigma2
-   integer :: i
+   integer :: i, m
 
    input = 'input.dat'
+   m = 3
 
    i = 1
    do while (i <= command_argument_count())
@@ -29,12 +30,20 @@ program main_berg
          stop
        case ('-i', '--input')
          if (i >= command_argument_count()) then
-            print '(a)', 'Error: missing value for -o'
+            print '(a)', 'Error: missing value for -i'
             stop 1
          end if
          i = i + 1
          call get_command_argument(i, arg)
          read(arg, *) input
+       case ('-m', '--length')
+         if (i >= command_argument_count()) then
+            print '(a)', 'Error: missing value for -m'
+            stop 1
+         end if
+         i = i + 1
+         call get_command_argument(i, arg)
+         read(arg, *) m
        case default
          print '(a,a,/)', 'Unrecognized command-line option: ', arg
          call print_help()
@@ -45,7 +54,7 @@ program main_berg
 
    call read_single_column(input, series)
 
-   call estimate_hurst_berg(series, H, a, H_err, a_err, sigma2)
+   call estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
 
    print '("H =      ", F6.3)', H
    print '("a =      ", F6.3)', a
@@ -61,5 +70,6 @@ contains
       print '(a)', '  -v, --version     print version information and exit'
       print '(a)', '  -h, --help        print usage information and exit'
       print '(a)', '  -i, --input       select input file'
+      print '(a)', '  -m, --length      select berg AR filter length'
    end subroutine print_help
 end program main_berg
