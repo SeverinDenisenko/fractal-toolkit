@@ -27,10 +27,10 @@ LIB_SRCS := $(SRC_DIR)/version.f90 \
 			$(SRC_DIR)/complex.f90 \
 			$(SRC_DIR)/fourier.f90 \
 			$(SRC_DIR)/solvers.f90 \
-            $(SRC_DIR)/integers.f90 \
+			$(SRC_DIR)/integers.f90 \
 			$(SRC_DIR)/conv.f90 \
 			$(SRC_DIR)/frac.f90 \
-            $(SRC_DIR)/generators.f90 \
+			$(SRC_DIR)/generators.f90 \
 			$(SRC_DIR)/spectra.f90 \
 			$(SRC_DIR)/hurst.f90 \
 			$(SRC_DIR)/io.f90

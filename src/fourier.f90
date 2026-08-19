@@ -50,15 +50,14 @@ contains
       call check(is2power(n), 'sfft1d: n must be a power of 2')
 
       allocate(tmp(1, size(data)))
-      tmp(1,1:size(data)) = data
+      tmp(1, 1:size(data)) = data
 
       call sfft2d(tmp, isign)
 
-      data = tmp(1,1:size(data))
+      data = tmp(1, 1:size(data))
    end subroutine sfft1d
 
    subroutine sfft2d(data, isign)
-      implicit none
       complex(wp), intent(inout) :: data(:,:)
       integer, intent(in) :: isign
 
@@ -73,7 +72,7 @@ contains
 
       n2 = n / 2
       j = n2
-      do i=1, n-2
+      do i = 1, n - 2
          if (j > i) then
             call swap(data(:,j+1), data(:,i+1))
          end if
@@ -92,9 +91,9 @@ contains
          theta = pi / (isign * mmax)
          wwp = cmplx(-2.0_wp * sin(0.5_wp * theta)**2, sin(theta), kind=wp)
          w = cmplx(1.0_wp, 0.0_wp, kind=wp)
-         do m = 1,mmax
-            ws=w
-            do i = m,n,istep
+         do m = 1, mmax
+            ws = w
+            do i = m, n, istep
                j = i + mmax
                temp = ws * data(:,j)
                data(:,j) = data(:,i) - temp
@@ -125,9 +124,9 @@ contains
    
       if (present(zdata)) then
          call check(n / 2 == size(zdata), msg='srfft')
-         cdata=>zdata
+         cdata => zdata
          if (isign == 1) then
-            cdata=cmplx(data(1:n-1:2), data(2:n:2), kind=wp)
+            cdata = cmplx(data(1:n-1:2), data(2:n:2), kind=wp)
          end if
       else
          allocate(cdata(n / 2))
@@ -136,7 +135,7 @@ contains
    
       if (isign == 1) then
          c2 = -0.5_wp
-         call sfft1d(cdata,+1)
+         call sfft1d(cdata, +1)
       else
          c2 = 0.5_wp
       end if

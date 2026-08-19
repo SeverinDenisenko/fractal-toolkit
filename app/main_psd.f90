@@ -1,5 +1,4 @@
-program main_berg
-   use stdlib_error, only: check
+program main_psd
    use io, only: read_single_column, write_table_file
    use spectra, only: berg_psd, berg_psd_size
    use version, only: max_ver_len, ver
@@ -37,14 +36,14 @@ program main_berg
          call get_command_argument(i, arg)
          read(arg, *) input
        case ('-o', '--output')
-         if (i >= command_argument_count()) then
-            print '(a)', 'Error: missing value for -i'
+          if (i >= command_argument_count()) then
+             print '(a)', 'Error: missing value for -o'
             stop 1
          end if
          i = i + 1
          call get_command_argument(i, arg)
          read(arg, *) output
-       case ('-m', '--length')
+       case ('-m', '--order')
          if (i >= command_argument_count()) then
             print '(a)', 'Error: missing value for -m'
             stop 1
@@ -77,7 +76,7 @@ contains
       print '(a)', '  -v, --version     print version information and exit'
       print '(a)', '  -h, --help        print usage information and exit'
       print '(a)', '  -i, --input       select input file'
-      print '(a)', '  -o, --output      select input file'
-      print '(a)', '  -m, --length      select berg AR filter length'
+       print '(a)', '  -o, --output      select output file'
+       print '(a)', '  -m, --order       select berg AR filter length'
    end subroutine print_help
-end program main_berg
+end program main_psd

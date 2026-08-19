@@ -1,6 +1,5 @@
 program main_generate
-   use stdlib_error, only: check
-   use generators, only: generte_white_integrate, generte_fgn_integrate, default_seed
+   use generators, only: generate_white_integrate, generate_fgn_integrate, default_seed
    use io, only: write_table_file
    use precision, only: wp
    use version, only: max_ver_len, ver
@@ -47,12 +46,13 @@ program main_generate
          call get_command_argument(i, arg)
          read(arg, *) a
        case ('-s', '--seed')
-         if (i >= command_argument_count()) then
-            print '(a)', 'Error: missing value for -s'
-            stop 1
-         end if
-         i = i + 1
-         call get_command_argument(i, arg)
+          if (i >= command_argument_count()) then
+             print '(a)', 'Error: missing value for -s'
+             stop 1
+          end if
+          i = i + 1
+          call get_command_argument(i, arg)
+          read(arg, *) s
        case ('-o', '--output')
          if (i >= command_argument_count()) then
             print '(a)', 'Error: missing value for -o'
@@ -70,7 +70,7 @@ program main_generate
    end do
 
    allocate(series(n))
-   call generte_fgn_integrate(series, a, s)
+   call generate_fgn_integrate(series, a, s)
    call write_table_file(output, series)
 contains
    subroutine print_help()

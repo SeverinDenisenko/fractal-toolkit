@@ -1,5 +1,4 @@
 program main_hurst
-   use stdlib_error, only: check
    use io, only: read_single_column
    use hurst, only: estimate_hurst_berg
    use version, only: max_ver_len, ver
@@ -36,7 +35,7 @@ program main_hurst
          i = i + 1
          call get_command_argument(i, arg)
          read(arg, *) input
-       case ('-m', '--length')
+       case ('-m', '--order')
          if (i >= command_argument_count()) then
             print '(a)', 'Error: missing value for -m'
             stop 1
@@ -70,6 +69,6 @@ contains
       print '(a)', '  -v, --version     print version information and exit'
       print '(a)', '  -h, --help        print usage information and exit'
       print '(a)', '  -i, --input       select input file'
-      print '(a)', '  -m, --length      select berg AR filter length'
+      print '(a)', '  -m, --order       select berg AR filter length'
    end subroutine print_help
 end program main_hurst

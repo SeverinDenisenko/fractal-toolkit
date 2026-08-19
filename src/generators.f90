@@ -10,11 +10,11 @@ module generators
    use integers, only: up2power
    implicit none
 
-   integer :: default_seed = 42
-   real(wp) :: default_sigma = 1.0_wp
-   real(wp) :: default_mu = 0.0_wp
+   integer, parameter :: default_seed = 42
+   real(wp), parameter :: default_sigma = 1.0_wp
+   real(wp), parameter :: default_mu = 0.0_wp
 contains
-   subroutine generte_white(array, mu, sigma, seed)
+   subroutine generate_white(array, mu, sigma, seed)
       real(wp), intent(out) :: array(:)
       real(wp), optional, intent(in) :: mu
       real(wp), optional, intent(in) :: sigma
@@ -27,9 +27,9 @@ contains
       call random_seed(optval(seed, default_seed), seed_get)
 
       array(:) = rvs_uniform(optval(mu, default_mu) - optval(sigma, default_sigma) / 2.0_wp, optval(mu, default_mu) + optval(sigma, default_sigma) / 2.0_wp, n)
-   end subroutine generte_white
+   end subroutine generate_white
 
-   subroutine generte_fgn(array, mu, sigma, seed)
+   subroutine generate_fgn(array, mu, sigma, seed)
       real(wp), intent(out) :: array(:)
       real(wp), optional, intent(in) :: mu
       real(wp), optional, intent(in) :: sigma
@@ -43,10 +43,10 @@ contains
       call random_seed(optval(seed, default_seed), seed_get)
 
       array(:) = rvs_normal(optval(mu, default_mu), optval(sigma, default_sigma), n)
-   end subroutine generte_fgn
+   end subroutine generate_fgn
 
    ! Produces series by integrating fgn fractionaly
-   subroutine generte_fgn_integrate(series, intorder, seed_in)
+   subroutine generate_fgn_integrate(series, intorder, seed_in)
       real(wp), intent(out) :: series(:)
       real(wp), intent(in) :: intorder
       integer, optional, intent(in) :: seed_in
@@ -57,14 +57,14 @@ contains
       n = size(series)
       allocate(fgn(n))
 
-      call generte_fgn(fgn, 0.0_wp, 1.0_wp, seed_in)
+      call generate_fgn(fgn, 0.0_wp, 1.0_wp, seed_in)
       call frac_diff_simple(-intorder, fgn, series)
 
       deallocate(fgn)
-   end subroutine generte_fgn_integrate
+   end subroutine generate_fgn_integrate
 
    ! Produces series by integrating white noise fractionally
-   subroutine generte_white_integrate(series, intorder, seed_in)
+   subroutine generate_white_integrate(series, intorder, seed_in)
       real(wp), intent(out) :: series(:)
       real(wp), intent(in) :: intorder
       integer, optional, intent(in) :: seed_in
@@ -75,11 +75,11 @@ contains
       n = size(series)
       allocate(noise(n))
 
-      call generte_white(noise, 0.0_wp, 1.0_wp, seed_in)
+      call generate_white(noise, 0.0_wp, 1.0_wp, seed_in)
       call frac_diff_simple(-intorder, noise, series)
 
       deallocate(noise)
-   end subroutine generte_white_integrate
+   end subroutine generate_white_integrate
 
    ! Produces series with PSD~1/f^a
    subroutine generate_color(series, a, seed_in)
@@ -97,7 +97,7 @@ contains
 
       allocate(white(n), white_fft(n/2), S(n/2), f(n/2))
 
-      call generte_white(white, default_mu, default_sigma, seed_in)
+      call generate_white(white, default_mu, default_sigma, seed_in)
 
       call rfft1d(white, white_fft)
       S = [0.0_wp, 1.0_wp / [((real(i, wp) / n) ** a, i = 1, n/2 - 1)] / n]

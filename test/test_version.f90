@@ -1,9 +1,9 @@
 program version_test
-   use version, only: ver
+   use version, only: max_ver_len, ver
    use stdlib_error, only: check
    implicit none
 
-   character(len=16) :: v
+   character(len=max_ver_len) :: v
 
    call ver(v)
    call check(v == '1.0')

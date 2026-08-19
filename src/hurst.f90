@@ -36,7 +36,7 @@ contains
       call berg_psd(f, P, series, 1.0_wp, m)
       call powerregress(f(2:), P(2:), a, c, sigma2, a_err, c_err)
 
-      a = -a;
+      a = -a
       H = slope_to_hurst(a)
       H_err = a_err / 2.0_wp
    end subroutine estimate_hurst_berg

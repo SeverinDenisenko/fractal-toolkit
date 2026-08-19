@@ -1,5 +1,4 @@
 program main_color
-   use stdlib_error, only: check
    use generators, only: generate_color, default_seed
    use io, only: write_table_file
    use precision, only: wp
@@ -47,12 +46,13 @@ program main_color
          call get_command_argument(i, arg)
          read(arg, *) a
        case ('-s', '--seed')
-         if (i >= command_argument_count()) then
-            print '(a)', 'Error: missing value for -s'
-            stop 1
-         end if
-         i = i + 1
-         call get_command_argument(i, arg)
+          if (i >= command_argument_count()) then
+             print '(a)', 'Error: missing value for -s'
+             stop 1
+          end if
+          i = i + 1
+          call get_command_argument(i, arg)
+          read(arg, *) s
        case ('-o', '--output')
          if (i >= command_argument_count()) then
             print '(a)', 'Error: missing value for -o'

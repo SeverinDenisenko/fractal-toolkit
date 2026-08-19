@@ -22,7 +22,7 @@ contains
       end do
    end subroutine frac_diff_coeff
 
-   ! Calculate fractional difference
+   ! Calculate fractional difference using precomputed coefficients
    subroutine frac_diff(coeff, series_in, series_out)
       real(wp), intent(in) :: coeff(:)
       real(wp), intent(in) :: series_in(:)

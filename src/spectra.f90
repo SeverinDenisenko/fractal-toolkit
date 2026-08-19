@@ -4,7 +4,7 @@ module spectra
    use stdlib_linalg, only: solve_lstsq
    use stdlib_error, only: check
    use stdlib_stats, only: var
-   use stdlib_constants, only: PI_dp
+   use constants, only: pi
    implicit none
 
 contains
@@ -27,7 +27,7 @@ contains
          end do
       end do
 
-      call check(size(S(p+1:)) == n)
+      call check(size(S(p+1:)) == n, msg="berg_ar_coeff: size mismatch")
       call solve_lstsq(X, S(p+1:), x=phi)
 
       deallocate(X)
@@ -91,7 +91,7 @@ contains
       call check(n == size(H), msg="ar_freq_response: size mismatch")
 
       do i = 1, n
-         omega = f(i) * 2.0_wp * PI_dp
+         omega = f(i) * 2.0_wp * pi
 
          denominator = cmplx(1.0_wp, 0.0_wp, kind=wp)
          do k = 1, p
