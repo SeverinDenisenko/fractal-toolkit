@@ -1,6 +1,6 @@
 module spectra
    use precision, only: wp
-   use intergers, only: up2power
+   use integers, only: up2power
    use stdlib_linalg, only: solve_lstsq
    use stdlib_error, only: check
    use stdlib_stats, only: var

@@ -1,7 +1,7 @@
 module conv
    use stdlib_error, only: check
    use precision, only: wp
-   use intergers, only: up2power
+   use integers, only: up2power
    use fourier, only: fft1d, ifft1d
    implicit none
 

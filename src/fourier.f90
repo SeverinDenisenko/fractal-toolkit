@@ -1,6 +1,6 @@
 module fourier
    use precision, only: wp
-   use intergers, only: is2power, up2power
+   use integers, only: is2power, up2power
    use stdlib_error, only: check
    use stdlib_math, only: swap
    use stdlib_optval, only: optval

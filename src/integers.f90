@@ -1,4 +1,4 @@
-module intergers
+module integers
    use stdlib_error, only: check
    implicit none
 
@@ -21,4 +21,4 @@ contains
 
       res = (n /= 0) .and. (iand(n, n - 1) == 0)
    end function is2power
-end module intergers
+end module integers

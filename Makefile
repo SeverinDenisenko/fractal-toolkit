@@ -1,6 +1,5 @@
 # Generic parameters
-PROJ_NAME := fractime
-EXEC_NAME := fractime
+PROJ_NAME := fractaltoolkit
 
 # Compiler and flags
 FC       := gfortran
@@ -28,7 +27,7 @@ LIB_SRCS := $(SRC_DIR)/version.f90 \
 			$(SRC_DIR)/complex.f90 \
 			$(SRC_DIR)/fourier.f90 \
 			$(SRC_DIR)/solvers.f90 \
-            $(SRC_DIR)/intergers.f90 \
+            $(SRC_DIR)/integers.f90 \
 			$(SRC_DIR)/conv.f90 \
 			$(SRC_DIR)/frac.f90 \
             $(SRC_DIR)/generators.f90 \
@@ -93,13 +92,13 @@ $(OBJ_DIR)/constants.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/complex.o: $(OBJ_DIR)/constants.o
 $(OBJ_DIR)/io.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/solvers.o: $(OBJ_DIR)/precision.o
-$(OBJ_DIR)/fourier.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/complex.o
+$(OBJ_DIR)/fourier.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/complex.o $(OBJ_DIR)/integers.o
 $(OBJ_DIR)/hurst.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/solvers.o 
-$(OBJ_DIR)/intergers.o: | $(OBJ_DIR) $(MOD_DIR)
-$(OBJ_DIR)/conv.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/fourier.o $(OBJ_DIR)/intergers.o
+$(OBJ_DIR)/integers.o: | $(OBJ_DIR) $(MOD_DIR)
+$(OBJ_DIR)/conv.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/fourier.o $(OBJ_DIR)/integers.o
 $(OBJ_DIR)/frac.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/conv.o
 $(OBJ_DIR)/generators.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/frac.o
-$(OBJ_DIR)/spectra.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/intergers.o
+$(OBJ_DIR)/spectra.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/integers.o
 
 # Create directories
 $(OBJ_DIR) $(MOD_DIR) $(LIB_DIR) $(BIN_DIR):

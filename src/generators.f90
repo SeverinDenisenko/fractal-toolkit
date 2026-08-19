@@ -7,7 +7,7 @@ module generators
    use stdlib_stats, only: mean
    use frac, only: frac_diff_simple
    use fourier, only: rfft1d, irfft1d
-   use intergers, only: up2power
+   use integers, only: up2power
    implicit none
 
    integer :: default_seed = 42
