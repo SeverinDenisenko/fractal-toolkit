@@ -93,8 +93,8 @@ $(OBJ_DIR)/constants.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/complex.o: $(OBJ_DIR)/constants.o
 $(OBJ_DIR)/io.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/solvers.o: $(OBJ_DIR)/precision.o
-$(OBJ_DIR)/fourier.o: $(OBJ_DIR)/precision.o
-$(OBJ_DIR)/hurst.o: $(OBJ_DIR)/precision.o
+$(OBJ_DIR)/fourier.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/complex.o
+$(OBJ_DIR)/hurst.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/solvers.o 
 $(OBJ_DIR)/intergers.o: | $(OBJ_DIR) $(MOD_DIR)
 $(OBJ_DIR)/conv.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/fourier.o $(OBJ_DIR)/intergers.o
 $(OBJ_DIR)/frac.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/conv.o
