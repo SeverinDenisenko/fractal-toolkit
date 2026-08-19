@@ -4,7 +4,10 @@ module generators
    use stdlib_stats_distribution_normal, only: rvs_normal
    use stdlib_stats_distribution_uniform, only: rvs_uniform
    use stdlib_optval, only: optval
+   use stdlib_stats, only: mean
    use frac, only: frac_diff_simple
+   use fourier, only: rfft1d, irfft1d
+   use intergers, only: up2power
    implicit none
 
    integer :: default_seed = 42
@@ -77,4 +80,31 @@ contains
 
       deallocate(noise)
    end subroutine generte_white_integrate
+
+   ! Produces series with PSD~1/f^a
+   subroutine generate_color(series, a, seed_in)
+      real(wp), intent(out) :: series(:)
+      real(wp), intent(in) :: a
+      integer, optional, intent(in) :: seed_in
+
+      real(wp), allocatable :: white(:), f(:)
+      complex(wp), allocatable :: white_fft(:)
+      real(wp), allocatable :: S(:)
+      integer :: n, i
+
+      n = size(series)
+      n = up2power(n)
+
+      allocate(white(n), white_fft(n/2), S(n/2), f(n/2))
+
+      call generte_white(white, default_mu, default_sigma, seed_in)
+
+      call rfft1d(white, white_fft)
+      S = [0.0_wp, 1.0_wp / [((real(i, wp) / n) ** a, i = 1, n/2 - 1)] / n]
+      S = sqrt(S)
+      S = S / sqrt(mean(S**2))
+      white_fft = white_fft * S
+      call irfft1d(white, white_fft)
+      series = white(1:size(series))
+   end subroutine generate_color
 end module generators

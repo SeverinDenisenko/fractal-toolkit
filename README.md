@@ -16,14 +16,9 @@ Run tests:
 make test
 ```
 
-## Library
-
-Library contains:
-* Burg PSD and AR estimators
-* Series generators
-
 ## Programs
 
 Programs contain:
 * Generators for fractal time series
 * Hurst exponent estimation
+* Burg method PSD estimator

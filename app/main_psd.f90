@@ -1,19 +1,19 @@
 program main_berg
    use stdlib_error, only: check
-   use io, only: read_single_column
-   use hurst, only: estimate_hurst_berg
+   use io, only: read_single_column, write_table_file
+   use spectra, only: berg_psd, berg_psd_size
    use version, only: max_ver_len, ver
    use precision, only: wp
    implicit none
 
    character(len=128) :: arg
-   character(len=128) :: input
+   character(len=128) :: input, output
    character(len=max_ver_len) :: v
-   real(wp), allocatable :: series(:)
-   real(wp) :: H, a, H_err, a_err, sigma2
+   real(wp), allocatable :: series(:), f(:), P(:)
    integer :: i, m
 
    input = 'input.dat'
+   output = 'output.dat'
    m = 3
 
    i = 1
@@ -36,6 +36,14 @@ program main_berg
          i = i + 1
          call get_command_argument(i, arg)
          read(arg, *) input
+       case ('-o', '--output')
+         if (i >= command_argument_count()) then
+            print '(a)', 'Error: missing value for -i'
+            stop 1
+         end if
+         i = i + 1
+         call get_command_argument(i, arg)
+         read(arg, *) output
        case ('-m', '--length')
          if (i >= command_argument_count()) then
             print '(a)', 'Error: missing value for -m'
@@ -54,22 +62,22 @@ program main_berg
 
    call read_single_column(input, series)
 
-   call estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
+   allocate(f(berg_psd_size(size(series))), P(berg_psd_size(size(series))))
 
-   print '("H =      ", F6.3)', H
-   print '("a =      ", F6.3)', a
-   print '("dH =     ", F6.3)', H_err
-   print '("da =     ", F6.3)', a_err
-   print '("sigma2 = ", F6.3)', sigma2
+   call berg_psd(f, P, series, 1.0_wp, m)
+
+   call write_table_file(output, f, P)
+
 contains
    subroutine print_help()
-      print '(a)', 'usage: berg [options]'
+      print '(a)', 'usage: psd [options]'
       print '(a)', ''
       print '(a)', 'cmdline options:'
       print '(a)', ''
       print '(a)', '  -v, --version     print version information and exit'
       print '(a)', '  -h, --help        print usage information and exit'
       print '(a)', '  -i, --input       select input file'
+      print '(a)', '  -o, --output      select input file'
       print '(a)', '  -m, --length      select berg AR filter length'
    end subroutine print_help
 end program main_berg
