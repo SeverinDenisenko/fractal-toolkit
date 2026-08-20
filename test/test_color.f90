@@ -37,4 +37,6 @@ program color_test
    call check(abs(H_err - 0.0_wp) < 1e-2)
    call check(abs(a_err - 0.0_wp) < 1e-2)
    call check(abs(sigma2 - 0.0_wp) < 1e-1)
+
+   deallocate(series)
 end program color_test

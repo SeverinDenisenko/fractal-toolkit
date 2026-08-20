@@ -106,5 +106,7 @@ contains
       white_fft = white_fft * S
       call irfft1d(white, white_fft)
       series = white(1:size(series))
+
+      deallocate(white, white_fft, S, f)
    end subroutine generate_color
 end module generators

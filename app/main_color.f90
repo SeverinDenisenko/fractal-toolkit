@@ -72,6 +72,7 @@ program main_color
    allocate(series(n))
    call generate_color(series, a, s)
    call write_table_file(output, series)
+   deallocate(series)
 contains
    subroutine print_help()
       print '(a)', 'usage: color [options]'

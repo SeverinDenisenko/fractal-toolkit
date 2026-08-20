@@ -34,6 +34,8 @@ contains
       end do
 
       call check(size(q) == size(pct), msg='percentile: size mismatch')
+
+      deallocate(sorted)
    end subroutine percentile
 
    ! Friedman-Diaconis method for estimating optimal bins count for historgam

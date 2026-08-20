@@ -55,6 +55,7 @@ contains
       call sfft2d(tmp, isign)
 
       data = tmp(1, 1:size(data))
+      deallocate(tmp)
    end subroutine sfft1d
 
    subroutine sfft2d(data, isign)

@@ -78,5 +78,7 @@ contains
       P = sigma2 * abs(H) ** 2
       P = P / (f(2) - f(1))
       P = P / sum(P) * var(S, corrected=.false.)
+
+      deallocate(predict, phi, H)
    end subroutine berg_psd
 end module spectra

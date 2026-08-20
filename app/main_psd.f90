@@ -67,6 +67,7 @@ program main_psd
 
    call write_table_file(output, f, P)
 
+   deallocate(series, f, P)
 contains
    subroutine print_help()
       print '(a)', 'usage: psd [options]'

@@ -39,5 +39,7 @@ contains
       a = -a
       H = slope_to_hurst(a)
       H_err = a_err / 2.0_wp
+
+      deallocate(f, P)
    end subroutine estimate_hurst_berg
 end module hurst

@@ -50,10 +50,12 @@ contains
             k_err = sqrt(cov_matrix(1,1))
          end if
 
-         if (present(a_err)) then
-            a_err = sqrt(cov_matrix(2,2))
-         end if
+          if (present(a_err)) then
+             a_err = sqrt(cov_matrix(2,2))
+          end if
       end if
+
+      deallocate(M)
    end subroutine linregress
 
    ! Solves y = c * x^a
@@ -92,9 +94,11 @@ contains
             a_err = sqrt(cov_matrix(1,1))
          end if
 
-         if (present(c_err)) then
-            c_err = sqrt(cov_matrix(2,2))
-         end if
+          if (present(c_err)) then
+             c_err = sqrt(cov_matrix(2,2))
+          end if
       end if
+
+      deallocate(M)
    end subroutine powerregress
 end module solvers

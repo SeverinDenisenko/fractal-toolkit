@@ -72,6 +72,7 @@ program main_generate
    allocate(series(n))
    call generate_fgn_integrate(series, a, s)
    call write_table_file(output, series)
+   deallocate(series)
 contains
    subroutine print_help()
       print '(a)', 'usage: generate [options]'

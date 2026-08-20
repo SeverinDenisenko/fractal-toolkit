@@ -22,4 +22,5 @@ program berg_test
    call berg_psd(f, P, data2, 1.0_wp, 4)
    call check(maxval(abs(P - [5.250_wp, 0.000_wp, 0.000_wp, 0.000_wp, 0.000_wp])) < 1e-5_wp)
 
+   deallocate(P, f)
 end program berg_test
