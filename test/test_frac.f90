@@ -8,7 +8,7 @@ program frac_test
    real(wp) :: data(5)
    real(wp) :: diff(5)
 
-   data = [0.0_wp, 1.0_wp, 2.0_wp, 3.0_wp, 4.0_wp]
+   data(:) = [0.0_wp, 1.0_wp, 2.0_wp, 3.0_wp, 4.0_wp]
 
    call frac_diff_coeff(coeff, 0.0_wp)
    call frac_diff(coeff, data, diff)

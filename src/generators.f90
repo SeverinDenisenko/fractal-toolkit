@@ -100,10 +100,10 @@ contains
       call generate_white(white, default_mu, default_sigma, seed_in)
 
       call rfft1d(white, white_fft)
-      S = [0.0_wp, 1.0_wp / [((real(i, wp) / n) ** a, i = 1, n/2 - 1)] / n]
-      S = sqrt(S)
-      S = S / sqrt(mean(S**2))
-      white_fft = white_fft * S
+      S(:) = [0.0_wp, 1.0_wp / [((real(i, wp) / n) ** a, i = 1, n/2 - 1)] / n]
+      S(:) = sqrt(S)
+      S(:) = S / sqrt(mean(S**2))
+      white_fft(:) = white_fft * S
       call irfft1d(white, white_fft)
       series = white(1:size(series))
 

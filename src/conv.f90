@@ -24,8 +24,8 @@ contains
 
       allocate(ax(n), ab(n))
 
-      ax = (0.0_wp, 0.0_wp)
-      ab = (0.0_wp, 0.0_wp)
+      ax(:) = (0.0_wp, 0.0_wp)
+      ab(:) = (0.0_wp, 0.0_wp)
 
       ax(1:nx) = cmplx(x, 0.0_wp, kind=wp)
       ab(1:nb) = cmplx(b, 0.0_wp, kind=wp)
@@ -33,7 +33,7 @@ contains
       call fft1d(ax)
       call fft1d(ab)
 
-      ax = ax * ab
+      ax(:) = ax * ab
 
       call ifft1d(ax)
 
@@ -60,8 +60,8 @@ contains
 
       allocate(ax(n), ab(n))
 
-      ax = (0.0_wp, 0.0_wp)
-      ab = (0.0_wp, 0.0_wp)
+      ax(:) = (0.0_wp, 0.0_wp)
+      ab(:) = (0.0_wp, 0.0_wp)
 
       ax(1:nx) = cmplx(x, 0.0_wp, kind=wp)
       ab(1:nb) = cmplx(b, 0.0_wp, kind=wp)
@@ -69,7 +69,7 @@ contains
       call fft1d(ax)
       call fft1d(ab)
 
-      ax = ax * ab
+      ax(:) = ax * ab
 
       call ifft1d(ax)
 

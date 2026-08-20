@@ -17,7 +17,7 @@ contains
 
       n = size(series)
       allocate(sorted(n))
-      sorted = series
+      sorted(:) = series
       call sort(sorted)
 
       do i=1,size(q)

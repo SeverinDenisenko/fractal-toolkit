@@ -96,7 +96,7 @@ contains
             ws = w
             do i = m, n, istep
                j = i + mmax
-               temp = ws * data(:,j)
+               temp(:) = ws * data(:,j)
                data(:,j) = data(:,i) - temp
                data(:,i) = data(:,i) + temp
             end do
@@ -141,10 +141,10 @@ contains
          c2 = 0.5_wp
       end if
 
-      w = zroots(sign(n, isign), n/4)
-      w = cmplx(-aimag(w), real(w), kind=wp)
-      h1 = c1 * (cdata(2:nq) + conjg(cdata(nh:nq+2:-1)))
-      h2 = c2 * (cdata(2:nq) - conjg(cdata(nh:nq+2:-1)))
+      w(:) = zroots(sign(n, isign), n/4)
+      w(:) = cmplx(-aimag(w), real(w), kind=wp)
+      h1(:) = c1 * (cdata(2:nq) + conjg(cdata(nh:nq+2:-1)))
+      h2(:) = c2 * (cdata(2:nq) - conjg(cdata(nh:nq+2:-1)))
       cdata(2:nq) = h1 + w(2:nq) * h2
       cdata(nh:nq+2:-1) = conjg(h1 - w(2:nq) * h2)
       z = cdata(1)

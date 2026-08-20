@@ -44,7 +44,7 @@ contains
       if (present(sigma2)) then
          sigma2 = residuals_var(k * x + a, y, 2)
 
-         cov_matrix = sigma2 * inv(matmul(transpose(M), M))
+         cov_matrix(:,:) = sigma2 * inv(matmul(transpose(M), M))
 
          if (present(k_err)) then
             k_err = sqrt(cov_matrix(1,1))
@@ -88,7 +88,7 @@ contains
       if (present(sigma2)) then
          sigma2 = residuals_var(a * log(x) + log(c), log(y), 2)
 
-         cov_matrix = sigma2 * inv(matmul(transpose(M), M))
+         cov_matrix(:,:) = sigma2 * inv(matmul(transpose(M), M))
 
          if (present(a_err)) then
             a_err = sqrt(cov_matrix(1,1))
