@@ -36,7 +36,8 @@ contains
       call check(size(q) == size(pct), msg='percentile: size mismatch')
    end subroutine percentile
 
-   integer function friedman_diaconis_bins(series) result(bins)
+   ! Friedman-Diaconis method for estimating optimal bins count for historgam
+   integer function fd_bins(series) result(bins)
       real(wp), intent(in) :: series(:)
       real(wp) :: pct(2), iqr, range, h
       
@@ -47,5 +48,5 @@ contains
       range = maxval(series) - minval(series)
 
       bins = ceiling(range / h)
-   end function friedman_diaconis_bins
+   end function fd_bins
 end module stat
