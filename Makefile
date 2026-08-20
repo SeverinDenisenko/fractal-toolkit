@@ -23,6 +23,7 @@ CFLAGS   += -I$(MOD_DIR) -J$(MOD_DIR)
 # Library sources in dependency order (modules first)
 LIB_SRCS := $(SRC_DIR)/version.f90 \
 			$(SRC_DIR)/precision.f90 \
+			$(SRC_DIR)/stat.f90 \
 			$(SRC_DIR)/constants.f90 \
 			$(SRC_DIR)/complex.f90 \
 			$(SRC_DIR)/fourier.f90 \
@@ -91,10 +92,10 @@ test: $(TEST_EXES)
 $(OBJ_DIR)/constants.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/complex.o: $(OBJ_DIR)/constants.o
 $(OBJ_DIR)/io.o: $(OBJ_DIR)/precision.o
+$(OBJ_DIR)/stat.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/solvers.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/fourier.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/complex.o $(OBJ_DIR)/integers.o
 $(OBJ_DIR)/hurst.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/solvers.o 
-$(OBJ_DIR)/integers.o: | $(OBJ_DIR) $(MOD_DIR)
 $(OBJ_DIR)/conv.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/fourier.o $(OBJ_DIR)/integers.o
 $(OBJ_DIR)/frac.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/conv.o
 $(OBJ_DIR)/generators.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/frac.o
