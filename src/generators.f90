@@ -1,13 +1,13 @@
 module generators
    use precision, only: wp
+   use stat, only: mean
+   use frac, only: frac_diff_simple
+   use fourier, only: rfft1d, irfft1d
+   use integers, only: up2power
    use stdlib_random, only: random_seed
    use stdlib_stats_distribution_normal, only: rvs_normal
    use stdlib_stats_distribution_uniform, only: rvs_uniform
    use stdlib_optval, only: optval
-   use stdlib_stats, only: mean
-   use frac, only: frac_diff_simple
-   use fourier, only: rfft1d, irfft1d
-   use integers, only: up2power
    implicit none
 
    integer, parameter :: default_seed = 42

@@ -2,8 +2,8 @@ module spectra
    use precision, only: wp
    use integers, only: up2power
    use autoreg, only: ar_coeff, ar_predict, ar_freq_response
+   use stat, only: var
    use stdlib_error, only: check
-   use stdlib_stats, only: var
    implicit none
 
 contains
@@ -77,7 +77,7 @@ contains
       ! Calculate the PSD
       P = sigma2 * abs(H) ** 2
       P = P / (f(2) - f(1))
-      P = P / sum(P) * var(S, corrected=.false.)
+      P = P / sum(P) * var(S, i=0.0_wp)
 
       deallocate(predict, phi, H)
    end subroutine berg_psd

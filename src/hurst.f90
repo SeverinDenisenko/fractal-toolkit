@@ -1,8 +1,8 @@
 module hurst
    use precision, only: wp
-   use stdlib_error, only: check
    use solvers, only: powerregress
    use spectra, only: berg_psd, berg_psd_size
+   use stdlib_error, only: check
    implicit none
 
 contains

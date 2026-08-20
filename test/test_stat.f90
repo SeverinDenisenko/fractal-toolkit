@@ -1,7 +1,7 @@
 program stat_test
    use precision, only: wp
-   use stdlib_error, only: check
    use stat, only: fd_bins, percentile
+   use stdlib_error, only: check
    implicit none
 
    real(wp) :: pct(2)

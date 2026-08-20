@@ -1,7 +1,7 @@
 program frac_test
    use precision, only: wp
-   use stdlib_error, only: check
    use frac, only: frac_diff_coeff, frac_diff
+   use stdlib_error, only: check
    implicit none
 
    real(wp) :: coeff(3)

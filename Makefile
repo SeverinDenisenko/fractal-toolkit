@@ -93,8 +93,8 @@ test: $(TEST_EXES)
 $(OBJ_DIR)/constants.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/complex.o: $(OBJ_DIR)/constants.o
 $(OBJ_DIR)/io.o: $(OBJ_DIR)/precision.o
-$(OBJ_DIR)/stat.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/autoreg.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/constants.o
+$(OBJ_DIR)/stat.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/solvers.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/fourier.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/complex.o $(OBJ_DIR)/integers.o $(OBJ_DIR)/constants.o
 $(OBJ_DIR)/spectra.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/integers.o $(OBJ_DIR)/autoreg.o

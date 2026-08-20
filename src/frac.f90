@@ -1,7 +1,7 @@
 module frac
-   use stdlib_error, only: check
    use precision, only: wp
    use conv, only: conv1d_same
+   use stdlib_error, only: check
    implicit none
 
 contains

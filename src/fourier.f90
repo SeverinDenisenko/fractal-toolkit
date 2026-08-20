@@ -1,11 +1,11 @@
 module fourier
    use precision, only: wp
    use integers, only: is2power, up2power
+   use constants, only: pi
+   use complex, only: zroots
    use stdlib_error, only: check
    use stdlib_math, only: swap
    use stdlib_optval, only: optval
-   use constants, only: pi
-   use complex, only: zroots
    implicit none
 
 contains

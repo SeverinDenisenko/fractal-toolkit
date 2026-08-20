@@ -2,9 +2,29 @@ module stat
    use precision, only: wp
    use stdlib_error, only: check
    use stdlib_sorting, only: sort
+   use stdlib_optval, only: optval
    implicit none
 
 contains
+   real(wp) function mean(series) result(mu)
+      real(wp), intent(in) :: series(:)
+
+      mu = sum(series) / size(series)
+   end function mean
+
+   ! i = -1.0: eliminates bias
+   ! i = +0.0: the variance of the sample
+   ! i = +1.0: minimizes mean squared error for the normal distribution
+   ! i = +1.1: mostly eliminates bias in unbiased estimation of standard deviation for the normal distribution
+   real(wp) function var(series, i) result(sigma2)
+      real(wp), intent(in) :: series(:)
+      real(wp), optional, intent(in) :: i
+      real(wp) :: d
+
+      d = real(size(series), wp) + optval(i, -1.0_wp)
+      sigma2 = sum((series - mean(series))**2) / d
+   end function var
+
    subroutine percentile(series, q, pct)
       real(wp), intent(in) :: series(:)
       real(wp), intent(in) :: q(:)
@@ -42,7 +62,7 @@ contains
    integer function fd_bins(series) result(bins)
       real(wp), intent(in) :: series(:)
       real(wp) :: pct(2), iqr, range, h
-      
+
       call percentile(series, [25.0_wp, 75.0_wp], pct)
 
       iqr = pct(2) - pct(1)
