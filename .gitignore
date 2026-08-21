@@ -2,3 +2,9 @@ obj/
 mod/
 bin/
 lib/
+venv/
+python/__pycache__/
+python/f90wrap_*.f90
+python/fractaltoolkit.py
+python/*.so
+__marimo__/

@@ -58,8 +58,24 @@ STDLIB_LIBS   := $(patsubst %/Accelerate.framework,-framework Accelerate,$(STDLI
 CFLAGS  += $(STDLIB_CFLAGS)
 LDFLAGS += $(STDLIB_LIBS)
 
+# Python extension module
+PY_DIR  := python
+PY_MOD  := fractaltoolkit
+# The Accelerate framework flag goes through LDFLAGS below; f2py rejects
+# -framework/-Wl options on its command line.
+PY_STDLIB_LIBS := $(patsubst -framework Accelerate,,$(STDLIB_LIBS))
+
 # Default target
 all: $(APP_EXES)
+
+.PHONY: python
+python: $(LIB)
+	mkdir -p $(PY_DIR)
+	cd $(PY_DIR) && \
+	f90wrap -k kindmap.f2cmap -m $(PY_MOD) $(addprefix ../,$(LIB_SRCS)) && \
+	FFLAGS="-I$(CURDIR)/mod" LDFLAGS="-Wl,-framework,Accelerate" \
+	f2py-f90wrap -c -m _$(PY_MOD) f90wrap_*.f90 $(CURDIR)/$(LIB) $(PY_STDLIB_LIBS) && \
+	test -n "$$_$(PY_MOD)"*.so
 
 # Build static library
 $(LIB): $(LIB_OBJS) | $(LIB_DIR)
@@ -109,5 +125,7 @@ $(OBJ_DIR) $(MOD_DIR) $(LIB_DIR) $(BIN_DIR):
 
 clean:
 	rm -rf $(OBJ_DIR) $(MOD_DIR) $(LIB_DIR) $(BIN_DIR)
+	rm -f $(PY_DIR)/f90wrap_*.f90 $(PY_DIR)/fractaltoolkit.py $(PY_DIR)/*.so
+	rm -rf $(PY_DIR)/__pycache__
 
 .PHONY: all test clean
