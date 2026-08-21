@@ -3,7 +3,7 @@ PROJ_NAME := fractaltoolkit
 
 # Compiler and flags
 FC       := gfortran
-CFLAGS   := -O2 -g -fbacktrace -ffpe-trap=invalid,zero,overflow -Wall -Wextra -fcheck=all -std=f2023
+CFLAGS   := -O2 -g -fbacktrace -ffpe-trap=invalid,overflow -Wall -Wextra -fcheck=all -std=f2023
 LDFLAGS  :=
 AR       := ar
 ARFLAGS  := rcs
