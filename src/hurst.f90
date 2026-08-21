@@ -17,16 +17,25 @@ contains
       end if
    end function slope_to_hurst
 
+   subroutine estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2)
+      real(wp), intent(in) :: f(:), P(:)
+      real(wp), intent(out) :: H, a, H_err, a_err, sigma2
+
+      real(wp) :: c, c_err
+
+      call powerregress(f(2:), P(2:), a, c, sigma2, a_err, c_err)
+
+      a = -a
+      H = slope_to_hurst(a)
+      H_err = a_err / 2.0_wp
+   end subroutine estimate_hurst_psd
+
    subroutine estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
       real(wp), intent(in) :: series(:)
       integer, intent(in) :: m
-      real(wp), intent(out) :: H, H_err
-      real(wp), intent(out) :: a, a_err
-      real(wp), intent(out) :: sigma2
+      real(wp), intent(out) :: H, a, H_err, a_err, sigma2
 
-      real(wp), allocatable :: P(:)
-      real(wp), allocatable :: f(:)
-      real(wp) :: c, c_err
+      real(wp), allocatable :: P(:), f(:)
       integer :: n
 
       n = size(series)
@@ -34,11 +43,7 @@ contains
       allocate(f(psd_size(n)), P(psd_size(n)))
 
       call berg_psd(f, P, series, 1.0_wp, m)
-      call powerregress(f(2:), P(2:), a, c, sigma2, a_err, c_err)
-
-      a = -a
-      H = slope_to_hurst(a)
-      H_err = a_err / 2.0_wp
+      call estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2)
 
       deallocate(f, P)
    end subroutine estimate_hurst_berg
@@ -46,13 +51,9 @@ contains
    subroutine estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2)
       real(wp), intent(in) :: series(:)
       integer, intent(in) :: m
-      real(wp), intent(out) :: H, H_err
-      real(wp), intent(out) :: a, a_err
-      real(wp), intent(out) :: sigma2
+      real(wp), intent(out) :: H, a, H_err, a_err, sigma2
 
-      real(wp), allocatable :: P(:)
-      real(wp), allocatable :: f(:)
-      real(wp) :: c, c_err
+      real(wp), allocatable :: P(:), f(:)
       integer :: n
 
       n = size(series)
@@ -60,12 +61,14 @@ contains
       allocate(f(psd_size(n)), P(psd_size(n)))
 
       call yw_psd(f, P, series, 1.0_wp, m)
-      call powerregress(f(2:), P(2:), a, c, sigma2, a_err, c_err)
-
-      a = -a
-      H = slope_to_hurst(a)
-      H_err = a_err / 2.0_wp
+      call estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2)
 
       deallocate(f, P)
    end subroutine estimate_hurst_yw
+
+   ! TODO
+   ! subroutine rs_analysis(series, H, a, H_err, a_err, sigma2)
+   !    real(wp), intent(in) :: series(:)
+   !    real(wp), intent(out) :: H, a, H_err, a_err, sigma2
+   ! end subroutine rs_analysis
 end module hurst
