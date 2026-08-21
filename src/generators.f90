@@ -97,7 +97,7 @@ contains
 
       allocate(white(n), white_fft(n/2), S(n/2), f(n/2))
 
-      call generate_fgn(white, default_mu, default_sigma, seed_in)
+      call generate_white(white, default_mu, default_sigma, seed_in)
 
       call rfft1d(white, white_fft)
       S(:) = [0.0_wp, 1.0_wp / [((real(i, wp) / n) ** a, i = 1, n/2 - 1)] / n]

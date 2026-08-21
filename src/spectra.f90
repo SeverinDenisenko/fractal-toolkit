@@ -1,17 +1,17 @@
 module spectra
    use precision, only: wp
    use integers, only: up2power
-   use autoreg, only: ar_coeff, ar_predict, ar_freq_response
+   use autoreg, only: yw_ar_coeff, burg_ar_coeff, ar_predict, ar_freq_response
    use stat, only: variance
    use stdlib_error, only: check
    implicit none
 
 contains
    ! Compute optimal frequencies amount for time series with length `n`
-   integer function berg_psd_size(n) result(m)
+   integer function psd_size(n) result(m)
       integer, intent(in) :: n
       m = n / 2 + 1
-   end function berg_psd_size
+   end function psd_size
 
    ! Calculate normalized (0 to 1) frequencies from 0 up to 2 * Nyquist frequency for time step `dt`
    subroutine freq_full(f, dt)
@@ -39,46 +39,62 @@ contains
       f = [(nyquist * i / (n - 1), i = 0, n - 1)]
    end subroutine freq_nyquist
 
-   ! Calculate power spectrum density of a series `S` with even time step `dt` using Berg method of order `m`
-   subroutine berg_psd(f, P, S, dt, m)
+   subroutine ar_psd(f, P, S, dt, phi)
       real(wp), intent(out) :: P(:)
       real(wp), intent(out) :: f(:)
       real(wp), intent(in) :: S(:)
+      real(wp), intent(in) :: phi(:)
       real(wp), intent(in) :: dt
-      integer, intent(in) :: m
 
-      integer :: i
-      real(wp), allocatable :: phi(:)
-      real(wp), allocatable :: predict(:)
       complex(wp), allocatable :: H(:)
-      real(wp) :: sigma2
 
-      call check(size(S) > m, msg="berg_psd: size(S) must be larger then m")
-      call check(size(f) == berg_psd_size(size(S)), msg="berg_psd: size missmatch")
-      call check(size(P) == berg_psd_size(size(S)), msg="berg_psd: size missmatch")
+      call check(size(S) > size(phi), msg="ar_psd: size(S) must be larger then size(phi)")
+      call check(size(f) == psd_size(size(S)), msg="ar_psd: size missmatch")
+      call check(size(P) == psd_size(size(S)), msg="ar_psd: size missmatch")
 
-      allocate(predict(size(S) - m))
-      allocate(phi(m))
       allocate(H(size(P)))
-
-      ! Calculate AR
-      call ar_coeff(phi, S)
-
-      ! Calculate the prediction and prediction error
-      do i=1,size(S)-m
-         predict(i) = ar_predict(phi, S, i + m)
-      end do
-      sigma2 = variance(S(m+1:) - predict(:))
 
       ! Calculate the frequency response
       call freq_nyquist(f, dt)
       call ar_freq_response(phi, f, H)
 
       ! Calculate the PSD
-      P = sigma2 * abs(H) ** 2
+      P = abs(H) ** 2
       P = P / (f(2) - f(1))
       P = P / sum(P) * variance(S, i=0.0_wp)
 
-      deallocate(predict, phi, H)
+      deallocate(H)
+   end subroutine ar_psd
+
+   ! Calculate power spectrum density of a series `S` with even time step `dt` using Berg method of order `m`
+   subroutine berg_psd(f, P, S, dt, m)
+      real(wp), intent(out) :: f(:), P(:)
+      real(wp), intent(in) :: S(:), dt
+      integer, intent(in) :: m
+
+      real(wp), allocatable :: phi(:)
+
+      allocate(phi(m))
+
+      call burg_ar_coeff(phi, S)
+      call ar_psd(f, P, S, dt, phi)
+
+      deallocate(phi)
    end subroutine berg_psd
+
+   ! Calculate power spectrum density of a series `S` with even time step `dt` using Yule-Walker method of order `m`
+   subroutine yw_psd(f, P, S, dt, m)
+      real(wp), intent(out) :: f(:), P(:)
+      real(wp), intent(in) :: S(:), dt
+      integer, intent(in) :: m
+
+      real(wp), allocatable :: phi(:)
+
+      allocate(phi(m))
+
+      call yw_ar_coeff(phi, S)
+      call ar_psd(f, P, S, dt, phi)
+
+      deallocate(phi)
+   end subroutine yw_psd
 end module spectra

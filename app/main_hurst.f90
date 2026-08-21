@@ -1,6 +1,6 @@
 program main_hurst
    use io, only: read_single_column
-   use hurst, only: estimate_hurst_berg
+   use hurst, only: estimate_hurst_berg, estimate_hurst_yw
    use version, only: max_ver_len, ver
    use precision, only: wp
    implicit none
@@ -55,10 +55,20 @@ program main_hurst
 
    call estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
 
-   print '("H =      ", F6.3)', H
-   print '("a =      ", F6.3)', a
-   print '("dH =     ", F6.3)', H_err
-   print '("da =     ", F6.3)', a_err
+   print '(a)', 'Burg method:'
+   print '("     H = ", F6.3)', H
+   print '("     a = ", F6.3)', a
+   print '("    dH = ", F6.3)', H_err
+   print '("    da = ", F6.3)', a_err
+   print '("sigma2 = ", F6.3)', sigma2
+
+   call estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2)
+
+   print '(a)', 'Yule-Walker method:'
+   print '("     H = ", F6.3)', H
+   print '("     a = ", F6.3)', a
+   print '("    dH = ", F6.3)', H_err
+   print '("    da = ", F6.3)', a_err
    print '("sigma2 = ", F6.3)', sigma2
 contains
    subroutine print_help()

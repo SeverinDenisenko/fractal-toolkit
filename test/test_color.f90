@@ -1,6 +1,6 @@
 program color_test
    use precision, only: wp
-   use hurst, only: estimate_hurst_berg
+   use hurst, only: estimate_hurst_berg, estimate_hurst_yw
    use generators, only: generate_color
    use stdlib_error, only: check
    implicit none
@@ -14,10 +14,10 @@ program color_test
 
    allocate(series(n))
 
-   call generate_color(series, 3.0_wp)
+   call generate_color(series, 0.0_wp)
    call estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
-   call check(abs(H - 1.0_wp) < 1e-2)
-   call check(abs(a - 3.0_wp) < 1e-1)
+   call check(abs(H - 0.5_wp) < 1e-2)
+   call check(abs(a - 0.0_wp) < 1e-2)
    call check(abs(H_err - 0.0_wp) < 1e-2)
    call check(abs(a_err - 0.0_wp) < 1e-2)
    call check(abs(sigma2 - 0.0_wp) < 1e-1)
@@ -30,10 +30,10 @@ program color_test
    call check(abs(a_err - 0.0_wp) < 1e-2)
    call check(abs(sigma2 - 0.0_wp) < 1e-1)
 
-   call generate_color(series, 0.0_wp)
-   call estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
-   call check(abs(H - 0.5_wp) < 1e-2)
-   call check(abs(a - 0.0_wp) < 1e-2)
+   call generate_color(series, 3.0_wp)
+   call estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2)
+   call check(abs(H - 1.0_wp) < 1e-2)
+   call check(abs(a - 3.0_wp) < 1e-1)
    call check(abs(H_err - 0.0_wp) < 1e-2)
    call check(abs(a_err - 0.0_wp) < 1e-2)
    call check(abs(sigma2 - 0.0_wp) < 1e-1)

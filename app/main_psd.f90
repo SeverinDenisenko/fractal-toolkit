@@ -1,6 +1,6 @@
 program main_psd
    use io, only: read_single_column, write_table_file
-   use spectra, only: berg_psd, berg_psd_size
+   use spectra, only: berg_psd, yw_psd, psd_size
    use version, only: max_ver_len, ver
    use precision, only: wp
    implicit none
@@ -61,9 +61,9 @@ program main_psd
 
    call read_single_column(input, series)
 
-   allocate(f(berg_psd_size(size(series))), P(berg_psd_size(size(series))))
+   allocate(f(psd_size(size(series))), P(psd_size(size(series))))
 
-   call berg_psd(f, P, series, 1.0_wp, m)
+   call yw_psd(f, P, series, 1.0_wp, m)
 
    call write_table_file(output, f, P)
 

@@ -6,8 +6,8 @@ module autoreg
    implicit none
 
 contains
-   ! Calculate AR coefficients `phi` for time series `S` by solving linear system of equatins with Hankel matrix
-   subroutine ar_coeff(phi, S)
+   ! Calculate AR coefficients `phi` for time series `S` by solving Yule-Walker equations
+   subroutine yw_ar_coeff(phi, S)
       real(wp), intent(out) :: phi(:)
       real(wp), intent(in) :: S(:)
 
@@ -25,11 +25,64 @@ contains
          end do
       end do
 
-      call check(size(S(p+1:)) == n, msg="berg_ar_coeff: size mismatch")
+      call check(size(S(p+1:)) == n, msg="yw_ar_coeff: size mismatch")
       call solve_lstsq(X, S(p+1:), x=phi)
 
       deallocate(X)
-   end subroutine ar_coeff
+   end subroutine yw_ar_coeff
+
+   ! Calculate AR coefficients `phi` for time series `S` by using Burg method
+   ! AR coefficients are not negated and one is not present in the front
+   subroutine burg_ar_coeff(phi, S)
+      real(wp), intent(out) :: phi(:)
+      real(wp), intent(in) :: S(:)
+
+      integer :: n, p, k, i
+      real(wp), allocatable :: f(:), b(:) ! Forward and backward prediction errors
+      real(wp) :: ref_coef, f_old, num, den
+      real(wp), allocatable :: a(:)
+
+      p = size(phi)
+      n = size(S)
+
+      allocate(f(n), b(n))
+      f = S
+      b = S
+
+      allocate(a(0:p))
+      a(1:p) = 0.0_wp
+      a(0) = 1.0_wp
+
+      do k = 1, p
+         ! Reflection coefficient
+         num = sum(f(k+1:n)*b(k:n-1))
+         den = sum(f(k+1:n)**2 + b(k:n-1)**2)
+         if (den < tiny(den)) then
+            ref_coef = 0.0_wp
+         else
+            ref_coef = -2.0_wp * num / den
+         end if
+
+         ! Levinson recursion
+         do i = 1, k-1
+            a(i) = a(i) + ref_coef * a(k-i)
+         end do
+         a(k) = ref_coef
+
+         ! Update prediction errors
+         if (k < p) then
+            do i = n, k+1, -1
+               f_old = f(i)
+               f(i)  = f_old + ref_coef * b(i-1)
+               b(i)  = b(i-1) + ref_coef * f_old
+            end do
+         end if
+      end do
+
+      phi = -a(1:p)
+
+      deallocate(f, b, a)
+   end subroutine burg_ar_coeff
 
    ! Compute prediction of timeseries `S` for AR model with coefficients `phi` at index `i` from previous values (not including `i`)
    real(wp) function ar_predict(phi, S, i) result(x)

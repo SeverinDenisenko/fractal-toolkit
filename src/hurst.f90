@@ -1,7 +1,7 @@
 module hurst
    use precision, only: wp
    use solvers, only: powerregress
-   use spectra, only: berg_psd, berg_psd_size
+   use spectra, only: berg_psd, yw_psd, psd_size
    use stdlib_error, only: check
    implicit none
 
@@ -31,7 +31,7 @@ contains
 
       n = size(series)
 
-      allocate(f(berg_psd_size(n)), P(berg_psd_size(n)))
+      allocate(f(psd_size(n)), P(psd_size(n)))
 
       call berg_psd(f, P, series, 1.0_wp, m)
       call powerregress(f(2:), P(2:), a, c, sigma2, a_err, c_err)
@@ -42,4 +42,30 @@ contains
 
       deallocate(f, P)
    end subroutine estimate_hurst_berg
+
+   subroutine estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2)
+      real(wp), intent(in) :: series(:)
+      integer, intent(in) :: m
+      real(wp), intent(out) :: H, H_err
+      real(wp), intent(out) :: a, a_err
+      real(wp), intent(out) :: sigma2
+
+      real(wp), allocatable :: P(:)
+      real(wp), allocatable :: f(:)
+      real(wp) :: c, c_err
+      integer :: n
+
+      n = size(series)
+
+      allocate(f(psd_size(n)), P(psd_size(n)))
+
+      call yw_psd(f, P, series, 1.0_wp, m)
+      call powerregress(f(2:), P(2:), a, c, sigma2, a_err, c_err)
+
+      a = -a
+      H = slope_to_hurst(a)
+      H_err = a_err / 2.0_wp
+
+      deallocate(f, P)
+   end subroutine estimate_hurst_yw
 end module hurst
