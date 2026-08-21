@@ -1,6 +1,6 @@
-program main_psd
+program main_fracdiff
    use io, only: read_single_column, write_table_file
-   use spectra, only: berg_psd, berg_psd_size
+   use frac, only: frac_diff_simple
    use version, only: max_ver_len, ver
    use precision, only: wp
    implicit none
@@ -8,12 +8,13 @@ program main_psd
    character(len=128) :: arg
    character(len=128) :: input, output
    character(len=max_ver_len) :: v
-   real(wp), allocatable :: series(:), f(:), P(:)
-   integer :: i, m
+   real(wp), allocatable :: series(:), result(:)
+   integer :: i
+   real(wp) :: a
 
    input = 'input.dat'
    output = 'output.dat'
-   m = 3
+   a = 1
 
    i = 1
    do while (i <= command_argument_count())
@@ -43,14 +44,14 @@ program main_psd
          i = i + 1
          call get_command_argument(i, arg)
          read(arg, *) output
-       case ('-m', '--order')
+       case ('-a', '--order')
          if (i >= command_argument_count()) then
-            print '(a)', 'Error: missing value for -m'
+            print '(a)', 'Error: missing value for -a'
             stop 1
          end if
          i = i + 1
          call get_command_argument(i, arg)
-         read(arg, *) m
+         read(arg, *) a
        case default
          print '(a,a,/)', 'Unrecognized command-line option: ', arg
          call print_help()
@@ -61,18 +62,18 @@ program main_psd
 
    call read_single_column(input, series)
 
-   allocate(f(berg_psd_size(size(series))), P(berg_psd_size(size(series))))
+   allocate(result(size(series)))
 
-   call berg_psd(f, P, series, 1.0_wp, m)
+   call frac_diff_simple(a, series, result)
 
-   call write_table_file(output, f, P)
+   call write_table_file(output, result)
 
-   deallocate(series, f, P)
+   deallocate(series, result)
 contains
    subroutine print_help()
-      print '(a)', 'Calculate PSD using Burg maximum entropy method'
+      print '(a)', 'Fractionaly differentiate/integrate timeseries'
       print '(a)', ''
-      print '(a)', 'usage: psd [options]'
+      print '(a)', 'usage: fracdiff [options]'
       print '(a)', ''
       print '(a)', 'cmdline options:'
       print '(a)', ''
@@ -80,6 +81,6 @@ contains
       print '(a)', '  -h, --help        print usage information and exit'
       print '(a)', '  -i, --input       select input file'
       print '(a)', '  -o, --output      select output file'
-      print '(a)', '  -m, --order       select berg AR filter length'
+      print '(a)', '  -a, --order       order of differentiation (negative for integration)'
    end subroutine print_help
-end program main_psd
+end program main_fracdiff

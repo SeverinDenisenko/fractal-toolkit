@@ -75,7 +75,7 @@ program main_generate
    deallocate(series)
 contains
    subroutine print_help()
-      print '(a)', 'Generate noise by integrating Gaussian noie'
+      print '(a)', 'Generate noise by integrating Gaussian noise'
       print '(a)', ''
       print '(a)', 'usage: generate [options]'
       print '(a)', ''
