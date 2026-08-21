@@ -75,6 +75,8 @@ program main_color
    deallocate(series)
 contains
    subroutine print_help()
+      print '(a)', 'Generate colored noise by adjusting PSD'
+      print '(a)', ''
       print '(a)', 'usage: color [options]'
       print '(a)', ''
       print '(a)', 'cmdline options:'

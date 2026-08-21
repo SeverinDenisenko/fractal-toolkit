@@ -2,7 +2,7 @@ module spectra
    use precision, only: wp
    use integers, only: up2power
    use autoreg, only: ar_coeff, ar_predict, ar_freq_response
-   use stat, only: var
+   use stat, only: variance
    use stdlib_error, only: check
    implicit none
 
@@ -68,7 +68,7 @@ contains
       do i=1,size(S)-m
          predict(i) = ar_predict(phi, S, i + m)
       end do
-      sigma2 = var(S(m+1:) - predict(:))
+      sigma2 = variance(S(m+1:) - predict(:))
 
       ! Calculate the frequency response
       call freq_nyquist(f, dt)
@@ -77,7 +77,7 @@ contains
       ! Calculate the PSD
       P = sigma2 * abs(H) ** 2
       P = P / (f(2) - f(1))
-      P = P / sum(P) * var(S, i=0.0_wp)
+      P = P / sum(P) * variance(S, i=0.0_wp)
 
       deallocate(predict, phi, H)
    end subroutine berg_psd

@@ -70,6 +70,8 @@ program main_psd
    deallocate(series, f, P)
 contains
    subroutine print_help()
+      print '(a)', 'Calculate PSD using Burg maximum entropy method'
+      print '(a)', ''
       print '(a)', 'usage: psd [options]'
       print '(a)', ''
       print '(a)', 'cmdline options:'

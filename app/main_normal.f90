@@ -1,19 +1,18 @@
-program main_hurst
+program main_normal
    use io, only: read_single_column
-   use hurst, only: estimate_hurst_berg
    use version, only: max_ver_len, ver
    use precision, only: wp
+   use stat, only: fit_normal
    implicit none
 
    character(len=128) :: arg
    character(len=128) :: input
    character(len=max_ver_len) :: v
    real(wp), allocatable :: series(:)
-   real(wp) :: H, a, H_err, a_err, sigma2
-   integer :: i, m
+   real(wp) :: mu, sigma, se_mu, se_sigma, ks, cvm, sk, ku
+   integer :: i
 
    input = 'input.dat'
-   m = 3
 
    i = 1
    do while (i <= command_argument_count())
@@ -35,14 +34,6 @@ program main_hurst
          i = i + 1
          call get_command_argument(i, arg)
          read(arg, *) input
-       case ('-m', '--order')
-         if (i >= command_argument_count()) then
-            print '(a)', 'Error: missing value for -m'
-            stop 1
-         end if
-         i = i + 1
-         call get_command_argument(i, arg)
-         read(arg, *) m
        case default
          print '(a,a,/)', 'Unrecognized command-line option: ', arg
          call print_help()
@@ -53,24 +44,24 @@ program main_hurst
 
    call read_single_column(input, series)
 
-   call estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
+   call fit_normal(series, mu, sigma, se_mu, se_sigma, ks, cvm, sk, ku)
 
-   print '("H =      ", F6.3)', H
-   print '("a =      ", F6.3)', a
-   print '("dH =     ", F6.3)', H_err
-   print '("da =     ", F6.3)', a_err
-   print '("sigma2 = ", F6.3)', sigma2
+   print '("                             Mean = ", ES10.3)', mu
+   print '("               Standard Deviation = ", ES10.3)', sigma
+   print '("              Mean Standard Error = ", ES10.3)', se_mu
+   print '("Standard Deviation Standard Error = ", ES10.3)', se_sigma
+   print '("     Kolmogorov-Smirnov Statistic = ", ES10.3)', ks
+   print '("       Cramer-von Mises Criterion = ", ES10.3)', cvm
+   print '("                         Skewness = ", ES10.3)', sk
+   print '("                  Excess Kurtosis = ", ES10.3)', ku
 contains
    subroutine print_help()
-      print '(a)', 'Estimate Hurst exponent'
-      print '(a)', ''
-      print '(a)', 'usage: hurst [options]'
+      print '(a)', 'usage: normal [options]'
       print '(a)', ''
       print '(a)', 'cmdline options:'
       print '(a)', ''
       print '(a)', '  -v, --version     print version information and exit'
       print '(a)', '  -h, --help        print usage information and exit'
       print '(a)', '  -i, --input       select input file'
-      print '(a)', '  -m, --order       select berg AR filter length'
    end subroutine print_help
-end program main_hurst
+end program main_normal
