@@ -8,3 +8,6 @@ python/f90wrap_*.f90
 python/fractaltoolkit.py
 python/*.so
 __marimo__/
+__pycache__/
+build/
+dist/

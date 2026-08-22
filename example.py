@@ -8,10 +8,6 @@ app = marimo.App(width="medium")
 def _():
     import marimo as mo
     import numpy as np
-    import sys
-    from pathlib import Path
-
-    sys.path.insert(0, str(Path(__file__).parent / "python"))
     import fractaltoolkit as fk
 
     return fk, np
