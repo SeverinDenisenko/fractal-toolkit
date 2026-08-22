@@ -1,6 +1,6 @@
 program color_test
    use precision, only: wp
-   use hurst, only: estimate_hurst_berg, estimate_hurst_yw
+   use hurst, only: estimate_hurst_berg, estimate_hurst_yw, rs_analysis
    use generators, only: generate_color
    use stdlib_error, only: check
    implicit none
@@ -37,6 +37,9 @@ program color_test
    call check(abs(H_err - 0.0_wp) < 1e-2)
    call check(abs(a_err - 0.0_wp) < 1e-2)
    call check(abs(sigma2 - 0.0_wp) < 1e-1)
+
+   call rs_analysis(series, H, H_err, sigma2)
+   write (*,*) H, H_err, sigma2
 
    deallocate(series)
 end program color_test

@@ -1,6 +1,6 @@
 module io
    use precision, only: wp
-   use check_mod, only: check
+   use checks, only: check
    implicit none
 
    integer, parameter :: default_unit = 42

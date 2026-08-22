@@ -1,7 +1,7 @@
 module solvers
    use precision, only: wp
    use stdlib_linalg, only: solve_lstsq, solve, inv
-   use check_mod, only: check
+   use checks, only: check
    implicit none
 
  contains

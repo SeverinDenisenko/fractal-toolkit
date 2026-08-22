@@ -3,7 +3,7 @@ module spectra
    use integers, only: up2power
    use autoreg, only: yw_ar_coeff, burg_ar_coeff, ar_predict, ar_freq_response
    use stat, only: variance
-   use check_mod, only: check
+   use checks, only: check
    implicit none
 
 contains

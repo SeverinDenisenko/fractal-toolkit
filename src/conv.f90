@@ -2,7 +2,7 @@ module conv
    use precision, only: wp
    use integers, only: up2power
    use fourier, only: fft1d, ifft1d
-   use check_mod, only: check
+   use checks, only: check
    implicit none
 
  contains

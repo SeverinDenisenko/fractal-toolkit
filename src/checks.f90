@@ -1,4 +1,4 @@
-module check_mod
+module checks
    use, intrinsic :: iso_fortran_env, only: error_unit
    use stdlib_error, only: stdlib_check => check
    implicit none
@@ -38,4 +38,4 @@ contains
          end if
       end if
    end function check
-end module check_mod
+end module checks

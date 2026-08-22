@@ -1,7 +1,7 @@
 module frac
    use precision, only: wp
    use conv, only: conv1d_same
-   use check_mod, only: check
+   use checks, only: check
    implicit none
 
 contains

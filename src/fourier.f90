@@ -3,7 +3,7 @@ module fourier
    use integers, only: is2power, up2power
    use constants, only: pi
    use complex, only: zroots
-   use check_mod, only: check
+   use checks, only: check
    use stdlib_math, only: swap
    use stdlib_optval, only: optval
    implicit none

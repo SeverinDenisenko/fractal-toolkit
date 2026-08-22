@@ -2,7 +2,7 @@ module autoreg
    use precision, only: wp
    use constants, only: pi
    use stdlib_linalg, only: solve_lstsq
-   use check_mod, only: check
+   use checks, only: check
    implicit none
 
 contains

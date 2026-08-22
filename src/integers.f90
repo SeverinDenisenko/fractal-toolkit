@@ -1,5 +1,5 @@
 module integers
-   use check_mod, only: check
+   use checks, only: check
    implicit none
 
  contains

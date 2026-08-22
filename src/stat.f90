@@ -1,6 +1,6 @@
 module stat
    use precision, only: wp
-   use check_mod, only: check
+   use checks, only: check
    use stdlib_sorting, only: sort
    use stdlib_optval, only: optval
    implicit none
