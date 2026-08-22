@@ -58,44 +58,8 @@ STDLIB_LIBS   := $(patsubst %/Accelerate.framework,-framework Accelerate,$(STDLI
 CFLAGS  += $(STDLIB_CFLAGS)
 LDFLAGS += $(STDLIB_LIBS)
 
-# Python extension module
-PY_DIR  := python
-PY_MOD  := fractaltoolkit
-# The Accelerate framework flag goes through LDFLAGS below; f2py rejects
-# -framework/-Wl options on its command line.
-PY_STDLIB_LIBS := $(patsubst -framework Accelerate,,$(STDLIB_LIBS))
-
-# Pip package
-PYTHON     ?= python3
-PKG_STAGE  := build/pip
-DIST_DIR   := dist
-# Extract version string from the Fortran `ver` subroutine in src/version.f90
-PY_VERSION := $(shell sed -n "s/.*v = '\([^']*\)'.*/\1/p" $(SRC_DIR)/version.f90)
-
 # Default target
 all: $(APP_EXES)
-
-.PHONY: python
-python: $(LIB)
-	mkdir -p $(PY_DIR)
-	cd $(PY_DIR) && \
-	f90wrap -k kindmap.f2cmap -m $(PY_MOD) $(addprefix ../,$(LIB_SRCS)) && \
-	FFLAGS="-I$(CURDIR)/mod" LDFLAGS="-Wl,-framework,Accelerate" \
-	f2py-f90wrap -c -m _$(PY_MOD) f90wrap_*.f90 $(CURDIR)/$(LIB) $(PY_STDLIB_LIBS) && \
-	test -n "$$_$(PY_MOD)"*.so
-
-# Build a pip-installable wheel from the compiled extension.
-# Stages the generated wrapper and the .so into a package layout, then runs
-# the PEP 517 build configured in pyproject.toml.
-.PHONY: pip
-pip: python
-	mkdir -p $(PKG_STAGE)/$(PY_MOD)
-	sed -e 's/^import _$(PY_MOD)$$/from . import _$(PY_MOD)/' \
-		$(PY_DIR)/$(PY_MOD).py > $(PKG_STAGE)/$(PY_MOD)/__init__.py
-	cp $(PY_DIR)/_$(PY_MOD)*.so $(PKG_STAGE)/$(PY_MOD)/
-	printf '__version__ = "%s"\n' "$(PY_VERSION)" > $(PKG_STAGE)/$(PY_MOD)/_version.py
-	$(PYTHON) -m pip wheel --no-deps --wheel-dir $(DIST_DIR) .
-	@echo "Wheel built: $$(ls $(DIST_DIR)/$(PROJ_NAME)-*.whl)"
 
 # Build static library
 $(LIB): $(LIB_OBJS) | $(LIB_DIR)

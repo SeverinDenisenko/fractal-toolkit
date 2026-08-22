@@ -1,2 +1,0 @@
-{'complex': {'dp': 'complex_double', 'wp': 'complex_double'},
- 'real': {'dp': 'double', 'sp': 'float', 'wp': 'double'}}
