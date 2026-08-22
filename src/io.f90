@@ -1,19 +1,20 @@
 module io
    use precision, only: wp
-   use stdlib_error, only: check
+   use check_mod, only: check
    implicit none
 
    integer, parameter :: default_unit = 42
 contains
-   subroutine write_table_file(name, array1, array2)
+   subroutine write_table_file(name, array1, array2, ierr)
       character(len=*), intent(in) :: name
       real(wp), intent(in) :: array1(:)
       real(wp), optional, intent(in) :: array2(:)
+      integer, intent(out), optional :: ierr
 
       integer :: i
 
       if (present(array2)) then
-         call check(size(array1) == size(array2), msg="write_table_file: size mismatch")
+         if (check(size(array1) == size(array2), msg="write_table_file: size mismatch", ierr=ierr)) return
       end if
 
       open(unit=default_unit, file=name, status='replace')
@@ -27,15 +28,16 @@ contains
       close(default_unit)
    end subroutine write_table_file
 
-   subroutine read_single_column(name, array)
+   subroutine read_single_column(name, array, ierr)
       character(len=*), intent(in) :: name
       real(wp), allocatable, intent(out) :: array(:)
+      integer, intent(out), optional :: ierr
 
       integer :: i, ios, n_lines
       real(wp) :: temp
 
       open(unit=default_unit, file=name, status='old', iostat=ios)
-      call check(ios == 0, msg="read_single_column: error opening file")
+      if (check(ios == 0, msg="read_single_column: error opening file", ierr=ierr)) return
 
       n_lines = 0
       do

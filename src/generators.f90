@@ -46,10 +46,11 @@ contains
    end subroutine generate_fgn
 
    ! Produces series by integrating fgn fractionaly
-   subroutine generate_fgn_integrate(series, intorder, seed_in)
+   subroutine generate_fgn_integrate(series, intorder, seed_in, ierr)
       real(wp), intent(out) :: series(:)
       real(wp), intent(in) :: intorder
       integer, optional, intent(in) :: seed_in
+      integer, intent(out), optional :: ierr
 
       integer :: n
       real(wp), allocatable :: fgn(:)
@@ -58,16 +59,17 @@ contains
       allocate(fgn(n))
 
       call generate_fgn(fgn, 0.0_wp, 1.0_wp, seed_in)
-      call frac_diff_simple(-intorder, fgn, series)
+      call frac_diff_simple(-intorder, fgn, series, ierr=ierr)
 
       deallocate(fgn)
    end subroutine generate_fgn_integrate
 
    ! Produces series by integrating white noise fractionally
-   subroutine generate_white_integrate(series, intorder, seed_in)
+   subroutine generate_white_integrate(series, intorder, seed_in, ierr)
       real(wp), intent(out) :: series(:)
       real(wp), intent(in) :: intorder
       integer, optional, intent(in) :: seed_in
+      integer, intent(out), optional :: ierr
 
       integer :: n
       real(wp), allocatable :: noise(:)
@@ -76,16 +78,17 @@ contains
       allocate(noise(n))
 
       call generate_white(noise, 0.0_wp, 1.0_wp, seed_in)
-      call frac_diff_simple(-intorder, noise, series)
+      call frac_diff_simple(-intorder, noise, series, ierr=ierr)
 
       deallocate(noise)
    end subroutine generate_white_integrate
 
    ! Produces series with PSD~1/f^a
-   subroutine generate_color(series, a, seed_in)
+   subroutine generate_color(series, a, seed_in, ierr)
       real(wp), intent(out) :: series(:)
       real(wp), intent(in) :: a
       integer, optional, intent(in) :: seed_in
+      integer, intent(out), optional :: ierr
 
       real(wp), allocatable :: white(:), f(:)
       complex(wp), allocatable :: white_fft(:)
@@ -93,18 +96,24 @@ contains
       integer :: n, i
 
       n = size(series)
-      n = up2power(n)
+      n = up2power(n, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
 
       allocate(white(n), white_fft(n/2), S(n/2), f(n/2))
 
       call generate_white(white, default_mu, default_sigma, seed_in)
 
-      call rfft1d(white, white_fft)
+      call rfft1d(white, white_fft, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
       S(:) = [0.0_wp, 1.0_wp / [((real(i, wp) / n) ** a, i = 1, n/2 - 1)] / n]
       S(:) = sqrt(S)
       S(:) = S / sqrt(mean(S**2))
       white_fft(:) = white_fft * S
-      call irfft1d(white, white_fft)
+      
+      call irfft1d(white, white_fft, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
       series = white(1:size(series))
 
       deallocate(white, white_fft, S, f)

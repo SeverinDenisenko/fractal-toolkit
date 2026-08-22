@@ -3,7 +3,7 @@ module spectra
    use integers, only: up2power
    use autoreg, only: yw_ar_coeff, burg_ar_coeff, ar_predict, ar_freq_response
    use stat, only: variance
-   use stdlib_error, only: check
+   use check_mod, only: check
    implicit none
 
 contains
@@ -39,24 +39,26 @@ contains
       f = [(nyquist * i / (n - 1), i = 0, n - 1)]
    end subroutine freq_nyquist
 
-   subroutine ar_psd(f, P, S, dt, phi)
+   subroutine ar_psd(f, P, S, dt, phi, ierr)
       real(wp), intent(out) :: P(:)
       real(wp), intent(out) :: f(:)
       real(wp), intent(in) :: S(:)
       real(wp), intent(in) :: phi(:)
       real(wp), intent(in) :: dt
+      integer, intent(out), optional :: ierr
 
       complex(wp), allocatable :: H(:)
 
-      call check(size(S) > size(phi), msg="ar_psd: size(S) must be larger then size(phi)")
-      call check(size(f) == psd_size(size(S)), msg="ar_psd: size missmatch")
-      call check(size(P) == psd_size(size(S)), msg="ar_psd: size missmatch")
+      if (check(size(S) > size(phi), msg="ar_psd: size(S) must be larger then size(phi)", ierr=ierr)) return
+      if (check(size(f) == psd_size(size(S)), msg="ar_psd: size missmatch", ierr=ierr)) return
+      if (check(size(P) == psd_size(size(S)), msg="ar_psd: size missmatch", ierr=ierr)) return
 
       allocate(H(size(P)))
 
       ! Calculate the frequency response
       call freq_nyquist(f, dt)
-      call ar_freq_response(phi, f, H)
+      call ar_freq_response(phi, f, H, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
 
       ! Calculate the PSD
       P = abs(H) ** 2
@@ -67,33 +69,40 @@ contains
    end subroutine ar_psd
 
    ! Calculate power spectrum density of a series `S` with even time step `dt` using Berg method of order `m`
-   subroutine berg_psd(f, P, S, dt, m)
+   subroutine berg_psd(f, P, S, dt, m, ierr)
       real(wp), intent(out) :: f(:), P(:)
       real(wp), intent(in) :: S(:), dt
       integer, intent(in) :: m
+      integer, intent(out), optional :: ierr
 
       real(wp), allocatable :: phi(:)
 
       allocate(phi(m))
 
       call burg_ar_coeff(phi, S)
-      call ar_psd(f, P, S, dt, phi)
+   
+      call ar_psd(f, P, S, dt, phi, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
 
       deallocate(phi)
    end subroutine berg_psd
 
    ! Calculate power spectrum density of a series `S` with even time step `dt` using Yule-Walker method of order `m`
-   subroutine yw_psd(f, P, S, dt, m)
+   subroutine yw_psd(f, P, S, dt, m, ierr)
       real(wp), intent(out) :: f(:), P(:)
       real(wp), intent(in) :: S(:), dt
       integer, intent(in) :: m
+      integer, intent(out), optional :: ierr
 
       real(wp), allocatable :: phi(:)
 
       allocate(phi(m))
 
-      call yw_ar_coeff(phi, S)
-      call ar_psd(f, P, S, dt, phi)
+      call yw_ar_coeff(phi, S, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
+      call ar_psd(f, P, S, dt, phi, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
 
       deallocate(phi)
    end subroutine yw_psd

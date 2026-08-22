@@ -1,12 +1,14 @@
 module integers
-   use stdlib_error, only: check
+   use check_mod, only: check
    implicit none
 
-contains
-   integer function up2power(n) result(x)
+ contains
+   integer function up2power(n, ierr) result(x)
       integer, intent(in) :: n
+      integer, intent(out), optional :: ierr
 
-      call check(n > 0, msg="up2power: n must be positive")
+      x = 0
+      if (check(n > 0, msg="up2power: n must be positive", ierr=ierr)) return
       x = n - 1
       x = ior(x, ishft(x, -1))
       x = ior(x, ishft(x, -2))

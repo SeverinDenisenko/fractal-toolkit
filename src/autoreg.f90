@@ -2,20 +2,23 @@ module autoreg
    use precision, only: wp
    use constants, only: pi
    use stdlib_linalg, only: solve_lstsq
-   use stdlib_error, only: check
+   use check_mod, only: check
    implicit none
 
 contains
    ! Calculate AR coefficients `phi` for time series `S` by solving Yule-Walker equations
-   subroutine yw_ar_coeff(phi, S)
+   subroutine yw_ar_coeff(phi, S, ierr)
       real(wp), intent(out) :: phi(:)
       real(wp), intent(in) :: S(:)
+      integer, intent(out), optional :: ierr
 
       integer :: n, p, i, j
       real(wp), allocatable :: X(:,:)
 
       p = size(phi)
       n = size(S) - p
+
+      if (check(size(S(p+1:)) == n, msg="yw_ar_coeff: size mismatch", ierr=ierr)) return
 
       allocate(X(n, p))
 
@@ -25,7 +28,6 @@ contains
          end do
       end do
 
-      call check(size(S(p+1:)) == n, msg="yw_ar_coeff: size mismatch")
       call solve_lstsq(X, S(p+1:), x=phi)
 
       deallocate(X)
@@ -94,10 +96,11 @@ contains
    end function ar_predict
 
    ! Calculate frequency response `H` of an AR filter `phi` on frequencies `f` (0 to 1)
-   subroutine ar_freq_response(phi, f, H)
+   subroutine ar_freq_response(phi, f, H, ierr)
       real(wp), intent(in) :: phi(:)
       real(wp), intent(in) :: f(:)
       complex(wp), intent(out) :: H(:)
+      integer, intent(out), optional :: ierr
 
       integer :: p, n
       integer :: i, k
@@ -107,7 +110,7 @@ contains
       p = size(phi)
       n = size(f)
 
-      call check(n == size(H), msg="ar_freq_response: size mismatch")
+      if (check(n == size(H), msg="ar_freq_response: size mismatch", ierr=ierr)) return
 
       do i = 1, n
          omega = f(i) * 2.0_wp * pi

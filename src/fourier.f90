@@ -3,64 +3,79 @@ module fourier
    use integers, only: is2power, up2power
    use constants, only: pi
    use complex, only: zroots
-   use stdlib_error, only: check
+   use check_mod, only: check
    use stdlib_math, only: swap
    use stdlib_optval, only: optval
    implicit none
 
 contains
-   subroutine fft2d(data)
+   subroutine fft2d(data, ierr)
       complex(wp), intent(inout) :: data(:,:)
-      call sfft2d(data, 1)
+      integer, intent(out), optional :: ierr
+
+      call sfft2d(data, 1, ierr=ierr)
    end subroutine fft2d
 
-   subroutine ifft2d(data)
+   subroutine ifft2d(data, ierr)
       complex(wp), intent(inout) :: data(:,:)
-      call sfft2d(data, -1)
+      integer, intent(out), optional :: ierr
+
+      call sfft2d(data, -1, ierr=ierr)
    end subroutine ifft2d
 
-   subroutine fft1d(data)
+   subroutine fft1d(data, ierr)
       complex(wp), intent(inout) :: data(:)
-      call sfft1d(data, 1)
+      integer, intent(out), optional :: ierr
+
+      call sfft1d(data, 1, ierr=ierr)
    end subroutine fft1d
 
-   subroutine ifft1d(data)
+   subroutine ifft1d(data, ierr)
       complex(wp), intent(inout) :: data(:)
-      call sfft1d(data, -1)
+      integer, intent(out), optional :: ierr
+
+      call sfft1d(data, -1, ierr=ierr)
    end subroutine ifft1d
 
-   subroutine rfft1d(data, zdata)
+   subroutine rfft1d(data, zdata, ierr)
       real(wp), intent(inout) :: data(:)
       complex(wp), intent(inout) :: zdata(:)
-      call srfft1d(data, 1, zdata)
+      integer, intent(out), optional :: ierr
+
+      call srfft1d(data, 1, zdata, ierr=ierr)
    end subroutine rfft1d
 
-   subroutine irfft1d(data, zdata)
+   subroutine irfft1d(data, zdata, ierr)
       real(wp), intent(inout) :: data(:)
       complex(wp), intent(inout) :: zdata(:)
-      call srfft1d(data, -1, zdata)
+      integer, intent(out), optional :: ierr
+
+      call srfft1d(data, -1, zdata, ierr=ierr)
    end subroutine irfft1d
 
-   subroutine sfft1d(data, isign)
+   subroutine sfft1d(data, isign, ierr)
       complex(wp), intent(inout) :: data(:)
       integer, intent(in) :: isign
+      integer, intent(out), optional :: ierr
       complex(wp), allocatable :: tmp(:,:)
       integer :: n
       n = size(data)
-      call check(is2power(n), 'sfft1d: n must be a power of 2')
+      if (check(is2power(n), 'sfft1d: n must be a power of 2', ierr=ierr)) return
 
       allocate(tmp(1, size(data)))
       tmp(1, 1:size(data)) = data
 
-      call sfft2d(tmp, isign)
+      call sfft2d(tmp, isign, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
 
       data = tmp(1, 1:size(data))
       deallocate(tmp)
    end subroutine sfft1d
 
-   subroutine sfft2d(data, isign)
+   subroutine sfft2d(data, isign, ierr)
       complex(wp), intent(inout) :: data(:,:)
       integer, intent(in) :: isign
+      integer, intent(out), optional :: ierr
 
       integer :: n, i, istep, j, m, mmax, n2
       real(wp) :: theta
@@ -69,7 +84,7 @@ contains
 
       n = size(data,2)
 
-      call check(is2power(n), 'fft: n must be a power of 2')
+      if (check(is2power(n), 'fft: n must be a power of 2', ierr=ierr)) return
 
       n2 = n / 2
       j = n2
@@ -106,10 +121,11 @@ contains
       end do
    end subroutine sfft2d
 
-   subroutine srfft1d(data, isign, zdata)
+   subroutine srfft1d(data, isign, zdata, ierr)
       real(wp), intent(inout) :: data(:)
       integer, intent(in) :: isign
       complex(wp), optional, target :: zdata(:)
+      integer, intent(out), optional :: ierr
    
       integer :: n, nh, nq
       complex(wp) :: w(size(data)/4)
@@ -117,14 +133,14 @@ contains
       complex(wp), pointer :: cdata(:)
       complex(wp) :: z
       real(wp) :: c1 = 0.5_wp, c2
-   
+    
       n = size(data)
-      call check(is2power(n), 'srfft: n must be a power of 2')
+      if (check(is2power(n), 'srfft: n must be a power of 2', ierr=ierr)) return
       nh = n / 2
       nq = n / 4
-   
+    
       if (present(zdata)) then
-         call check(n / 2 == size(zdata), msg='srfft')
+         if (check(n / 2 == size(zdata), msg='srfft', ierr=ierr)) return
          cdata => zdata
          if (isign == 1) then
             cdata = cmplx(data(1:n-1:2), data(2:n:2), kind=wp)
