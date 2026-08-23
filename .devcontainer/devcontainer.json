@@ -1,0 +1,14 @@
+{
+    "name": "Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "fortran-lang.linter-gfortran"
+            ]
+        }
+    },
+    "remoteUser": "root"
+}

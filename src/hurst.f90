@@ -146,7 +146,7 @@ contains
       if(check(size(RS) == rs_chart_size(size(series)), msg="rs_chart: size mismatch in RS", ierr=ierr)) return
 
       do j = 1, size(N)
-         n_curr = N(j)
+         n_curr = int(N(j))
          n_curr_real = real(n_curr, wp)
          n_chunks = size(series) / n_curr
 

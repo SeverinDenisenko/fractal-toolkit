@@ -58,7 +58,6 @@ STDLIB_LIBS   := $(shell pkg-config --libs fortran_stdlib)
 STDLIB_LIBS   := $(patsubst %/Accelerate.framework,-framework Accelerate,$(STDLIB_LIBS))
 
 CFLAGS  += $(STDLIB_CFLAGS)
-LDFLAGS += $(STDLIB_LIBS)
 
 # Default target
 all: $(APP_EXES)
@@ -77,11 +76,11 @@ $(OBJ_DIR)/%.o: $(APP_DIR)/%.f90 $(LIB_OBJS) | $(OBJ_DIR) $(MOD_DIR)
 
 # Link main executables
 $(BIN_DIR)/%: $(OBJ_DIR)/main_%.o $(LIB) | $(BIN_DIR)
-	$(FC) $(LDFLAGS) -o $@ $< -L$(LIB_DIR) -l$(PROJ_NAME)
+	$(FC) $(LDFLAGS) -o $@ $< -L$(LIB_DIR) -l$(PROJ_NAME) $(STDLIB_LIBS)
 
 # Build test executables (depends on library objects so module files exist)
 $(BIN_DIR)/%: $(TEST_DIR)/%.f90 $(LIB_OBJS) $(LIB) | $(BIN_DIR)
-	$(FC) $(CFLAGS) $(LDFLAGS) -o $@ $< -L$(LIB_DIR) -l$(PROJ_NAME)
+	$(FC) $(CFLAGS) $(LDFLAGS) -o $@ $< -L$(LIB_DIR) -l$(PROJ_NAME) $(STDLIB_LIBS)
 
 # Run all tests
 test: $(TEST_EXES)
@@ -114,7 +113,5 @@ $(OBJ_DIR) $(MOD_DIR) $(LIB_DIR) $(BIN_DIR):
 clean:
 	rm -rf $(OBJ_DIR) $(MOD_DIR) $(LIB_DIR) $(BIN_DIR)
 	rm -rf $(DIST_DIR) $(PKG_STAGE)
-	rm -f $(PY_DIR)/f90wrap_*.f90 $(PY_DIR)/fractaltoolkit.py $(PY_DIR)/*.so
-	rm -rf $(PY_DIR)/__pycache__
 
 .PHONY: all test clean

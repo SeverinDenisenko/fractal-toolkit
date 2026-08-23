@@ -1,6 +1,6 @@
 program main_hurst
    use io, only: read_single_column
-   use hurst, only: estimate_hurst_berg, estimate_hurst_yw
+   use hurst, only: estimate_hurst_berg, estimate_hurst_yw, rs_analysis
    use version, only: max_ver_len, ver
    use precision, only: wp
    implicit none
@@ -11,9 +11,10 @@ program main_hurst
    real(wp), allocatable :: series(:)
    real(wp) :: H, a, H_err, a_err, sigma2
    integer :: i, m
+   logical :: m_provided
 
+   m_provided = .false.
    input = 'input.dat'
-   m = 3
 
    i = 1
    do while (i <= command_argument_count())
@@ -43,6 +44,7 @@ program main_hurst
          i = i + 1
          call get_command_argument(i, arg)
          read(arg, *) m
+         m_provided = .true.
        case default
          print '(a,a,/)', 'Unrecognized command-line option: ', arg
          call print_help()
@@ -52,6 +54,21 @@ program main_hurst
    end do
 
    call read_single_column(input, series)
+
+   if (.not. m_provided) then
+      m = int(sqrt(real(size(series), wp)))
+   end if
+
+   print '(a)', 'Given:'
+   print '("     n = ", I8)', size(series)
+   print '("     m = ", I8)', m
+
+   call rs_analysis(series, H, H_err, sigma2)
+
+   print '(a)', 'Rescaled Range analysis:'
+   print '("     H = ", F6.3)', H
+   print '("    dH = ", F6.3)', H_err
+   print '("sigma2 = ", F6.3)', sigma2
 
    call estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2)
 
@@ -70,6 +87,7 @@ program main_hurst
    print '("    dH = ", F6.3)', H_err
    print '("    da = ", F6.3)', a_err
    print '("sigma2 = ", F6.3)', sigma2
+
 contains
    subroutine print_help()
       print '(a)', 'Estimate Hurst exponent'
