@@ -4,7 +4,12 @@ module hurst
    use spectra, only: berg_psd, yw_psd, psd_size
    use stat, only: mean, variance
    use checks, only: check
+   use math, only: log2
    implicit none
+
+   private
+   public :: slope_to_hurst, estimate_hurst_psd, estimate_hurst_berg, estimate_hurst_yw
+   public :: rs_chart_size, rs_chart, rs_analysis
 
 contains
    ! Compute Hurst expoenent from PSD slope `a` where PSD~f^a
@@ -83,46 +88,89 @@ contains
 
    integer function rs_chart_size(n) result(m)
       integer :: n
-      m = n / 2 - 1
+      m = int(log2(real(n, wp)))
    end function rs_chart_size
+
+   subroutine rs_process_chunk(data, n, n_real, range_val, std_dev, mean_val)
+      real(wp), intent(in) :: data(:)
+      integer, intent(in) :: n
+      real(wp), intent(in) :: n_real
+      real(wp), intent(out) :: range_val, std_dev, mean_val
+
+      real(wp) :: sum_val, sum_sq_val, cum_sum, cum_max, cum_min
+      real(wp) :: variance_val
+      integer :: k
+
+      sum_val = sum(data)
+      mean_val = sum_val / n_real
+
+      cum_sum = 0.0_wp
+      cum_max = -huge(1.0_wp)
+      cum_min = huge(1.0_wp)
+      sum_val = 0.0_wp
+      sum_sq_val = 0.0_wp
+
+      do k = 1, n
+         cum_sum = cum_sum + (data(k) - mean_val)
+         cum_max = max(cum_max, cum_sum)
+         cum_min = min(cum_min, cum_sum)
+
+         sum_val = sum_val + (data(k) - mean_val)
+         sum_sq_val = sum_sq_val + (data(k) - mean_val)**2
+      end do
+
+      range_val = cum_max - cum_min
+
+      if (n > 1) then
+         variance_val = (sum_sq_val - sum_val**2 / n_real) / (n_real - 1.0_wp)
+         std_dev = sqrt(max(variance_val, 0.0_wp))
+      else
+         std_dev = 0.0_wp
+      endif
+   end subroutine rs_process_chunk
 
    subroutine rs_chart(series, RS, N, ierr)
       real(wp), intent(in) :: series(:)
       real(wp), intent(out) :: RS(:), N(:)
       integer, intent(out), optional :: ierr
 
-      integer :: i, j, a, n_curr, n_min, n_max, begin, end
+      integer :: i, j, n_chunks, n_curr
+      integer :: start_idx, end_idx
       real(wp), allocatable :: cumdiv(:), stddiv(:)
-      real(wp) :: R
+      real(wp) :: R, mean_val
+      real(wp) :: n_curr_real
 
-      n_min = 2
-      n_max = size(series) / 2
-      N = [(i, i = n_min, n_max)]
+      N = [(2 ** i, i = 1, rs_chart_size(size(series)))]
 
-      if(check(rs_chart_size(size(series)) == size(N), msg="rs_chart: size mismatch", ierr=ierr)) return
-      if(check(rs_chart_size(size(series)) == size(RS), msg="rs_chart: size mismatch", ierr=ierr)) return
+      if(check(size(N) == rs_chart_size(size(series)), msg="rs_chart: size mismatch in N", ierr=ierr)) return
+      if(check(size(RS) == rs_chart_size(size(series)), msg="rs_chart: size mismatch in RS", ierr=ierr)) return
 
-      do j = 1,size(N)
-         n_curr = n_min + j - 1
-         a = size(series) / n_curr
-         allocate(cumdiv(a), stddiv(a))
+      do j = 1, size(N)
+         n_curr = N(j)
+         n_curr_real = real(n_curr, wp)
+         n_chunks = size(series) / n_curr
 
-         do i = 1, a
-            begin = 1 + (i - 1) * n_curr
-            end = begin + n_curr - 1
+         allocate(cumdiv(n_chunks), stddiv(n_chunks))
 
-            if (end .gt. size(series)) exit
+         do i = 1, n_chunks
+            start_idx = (i - 1) * n_curr + 1
+            end_idx = start_idx + n_curr - 1
 
-            cumdiv(i) = sum(series(begin:end) - mean(series(begin:end)))
-            stddiv(i) = sqrt(variance(series(begin:end)))
+            if (end_idx > size(series)) exit
+
+            call rs_process_chunk(series(start_idx:end_idx), n_curr, n_curr_real, R, stddiv(i), mean_val)
+
+            if (stddiv(i) > 0.0_wp) then
+               cumdiv(i) = R / stddiv(i)
+            else
+               cumdiv(i) = 0.0_wp
+            endif
          end do
 
-         R = maxval(cumdiv) - minval(cumdiv)
-         RS(j) = sum(R / stddiv) / a
+         RS(j) = sum(cumdiv) / real(n_chunks, wp)
 
          deallocate(cumdiv, stddiv)
       end do
-
    end subroutine rs_chart
 
    subroutine rs_analysis(series, H, H_err, sigma2, ierr)
@@ -139,7 +187,7 @@ contains
       call rs_chart(series, RS, N, ierr)
       if (present(ierr) .and. ierr /= 0) return
 
-      call powerregress(RS, N, H, c, sigma2, H_err, c_err, ierr=ierr)
+      call powerregress(N, RS, H, c, sigma2, H_err, c_err, ierr=ierr)
       if (present(ierr) .and. ierr /= 0) return
 
       deallocate(RS, N)
