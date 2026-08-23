@@ -52,7 +52,7 @@ TEST_EXES := $(patsubst $(TEST_DIR)/%.f90,$(BIN_DIR)/%,$(TEST_SRCS))
 
 # Stdlib
 STDLIB_CFLAGS := `pkg-config --cflags fortran_stdlib`
-STDLIB_LIBS   := $(shell pkg-config --libs fortran_stdlib)
+STDLIB_LIBS   := $(shell pkg-config --libs --static fortran_stdlib)
 # On macOS pkg-config emits a .../Accelerate.framework path, which ld cannot mmap().
 # Сonvert it to the -framework Accelerate flag.
 STDLIB_LIBS   := $(patsubst %/Accelerate.framework,-framework Accelerate,$(STDLIB_LIBS))
