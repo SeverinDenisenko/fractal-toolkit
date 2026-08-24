@@ -1,7 +1,7 @@
 program color_test
    use precision, only: wp
    use hurst, only: estimate_hurst_berg, estimate_hurst_yw, rs_analysis
-   use generators, only: generate_color
+   use generators, only: generate_color, generate_fgn
    use stdlib_error, only: check
    implicit none
 

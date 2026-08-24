@@ -1,5 +1,5 @@
 program main_generate
-   use generators, only: generate_white_integrate, generate_fgn_integrate, default_seed
+   use generators, only: generate_white_integrate, generate_gauss_integrate, default_seed
    use io, only: write_table_file
    use precision, only: wp
    use version, only: max_ver_len, ver
@@ -70,7 +70,7 @@ program main_generate
    end do
 
    allocate(series(n))
-   call generate_fgn_integrate(series, a, s)
+   call generate_gauss_integrate(series, a, s)
    call write_table_file(output, series)
    deallocate(series)
 contains
