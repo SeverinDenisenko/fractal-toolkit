@@ -70,6 +70,7 @@ program eop_test
    call cal_to_mjd_check()
 
    call read_eop_noheader()
+   call read_eop_comment_header()
 
    call write_eop('test_eop_tmp2.dat', tab)
    call read_eop('test_eop_tmp2.dat', tab2)
@@ -118,4 +119,32 @@ contains
       open(newunit=u, file='test_eop_tmp3.dat', status='old')
       close(u, status='delete')
    end subroutine read_eop_noheader
+
+   subroutine read_eop_comment_header()
+      type(eop_table) :: t4
+      real(wp), allocatable :: c(:)
+
+      open(newunit=u, file='test_eop_tmp4.dat', status='replace', action='write')
+      write(u, '(A)') '# GPS EARTH ROTATION DATA IN THE IERS FORMAT : EOP(GRGS)'
+      write(u, '(A)') '#'
+      write(u, '(A)') '# SECONDS SECONDS SECONDS SECONDS OF ARC OF ARC'
+      write(u, '(A)') '#  MJD         PM-X      PM-Y       UT1-UTC       DPSI         DEPS'
+      write(u, '(A)') '#   (days)      (")       (")        (s)           (")          (")'
+      write(u, '(A)') '   56900.500  0.209557  0.337600  -0.3268510      0.000000     0.000000'
+      write(u, '(A)') '   56901.500  0.209659  0.336118  -0.3273840      0.000000     0.000000'
+      close(u)
+
+      call read_eop('test_eop_tmp4.dat', t4)
+      call check(eop_nrow(t4) == 2)
+      call check(eop_ncol(t4) == 6)
+      call check(trim(t4%labels(1)%name) == 'MJD')
+      call check(trim(t4%labels(2)%name) == 'PM-X')
+      call check(trim(t4%labels(6)%name) == 'DEPS')
+
+      call get_eop_column(t4, 'PM-Y', c)
+      call check(abs(c(1) - 0.337600_wp) < 1e-12_wp)
+
+      open(newunit=u, file='test_eop_tmp4.dat', status='old')
+      close(u, status='delete')
+   end subroutine read_eop_comment_header
 end program eop_test

@@ -60,6 +60,7 @@ contains
       character(:), allocatable :: toks(:)
       integer :: p, d, ios, nt
 
+      if (present(ierr)) ierr = 0
       s = adjustl(raw)
       lab%name = trim(s)
       lab%power = 0
@@ -116,6 +117,7 @@ contains
 
       k = upper(key)
       idx = 0
+      if (present(ierr)) ierr = 0
       do i = 1, size(tab%labels)
          p = upper(tab%labels(i)%param)
          if (upper(tab%labels(i)%name) == k .or. p == k) then
@@ -225,14 +227,7 @@ contains
                end if
             end do
          else if (is_data) then
-            if (ncol == 0) then
-               ncol = size(toks)
-               allocate(tab%labels(ncol))
-               do i = 1, ncol
-                  tab%labels(i)%name = 'COL'//int_to_str(i)
-                  tab%labels(i)%param = tab%labels(i)%name
-               end do
-            end if
+            if (ncol == 0) ncol = size(toks)
             nrow = nrow + 1
          end if
       end do
@@ -244,6 +239,16 @@ contains
       if (check(nrow > 0, msg="read_eop: no data rows found in '"//filename//"'", ierr=ierr)) then
          close(u)
          return
+      end if
+
+      if (.not. allocated(tab%labels)) then
+         if (.not. comment_header(u, ncol, tab)) then
+            allocate(tab%labels(ncol))
+            do i = 1, ncol
+               tab%labels(i)%name = 'COL'//int_to_str(i)
+               tab%labels(i)%param = tab%labels(i)%name
+            end do
+         end if
       end if
 
       allocate(tab%values(ncol, nrow))
@@ -394,6 +399,92 @@ contains
       sec = sec - 60.0_wp*real(mn, wp)
    end subroutine mjd_to_cal
 
+   logical function comment_header(u, ncol, tab)
+      integer, intent(in) :: u
+      integer, intent(in) :: ncol
+      type(eop_table), intent(inout) :: tab
+
+      comment_header = comment_header_scan(u, ncol, tab, .true.)
+      if (.not. comment_header) comment_header = comment_header_scan(u, ncol, tab, .false.)
+   end function comment_header
+
+   logical function comment_header_scan(u, ncol, tab, require_unique)
+      integer, intent(in) :: u
+      integer, intent(in) :: ncol
+      type(eop_table), intent(inout) :: tab
+      logical, intent(in) :: require_unique
+
+      character(max_record_len) :: line
+      character(:), allocatable :: toks(:)
+      integer :: ios, i, j, k, e
+
+      comment_header_scan = .false.
+      rewind(u)
+      do
+         read(u, '(A)', iostat=ios) line
+         if (ios /= 0) return
+         k = verify(line, ' ')
+         if (k == 0) cycle
+         if (line(k:k) /= '#') cycle
+
+         toks = split_ws(line(k + 1:))
+         if (size(toks) /= ncol) cycle
+
+         do i = 1, ncol
+            if (.not. name_like(toks(i))) exit
+         end do
+         if (i <= ncol) cycle
+
+         if (require_unique) then
+            do i = 1, ncol
+               do j = i + 1, ncol
+                  if (upper(toks(i)) == upper(toks(j))) exit
+               end do
+               if (j <= ncol) exit
+            end do
+            if (i <= ncol) cycle
+         end if
+
+         allocate(tab%labels(ncol))
+         do i = 1, ncol
+            e = 0
+            call parse_eop_label(toks(i), tab%labels(i), ierr=e)
+            if (e /= 0) then
+               deallocate(tab%labels)
+               return
+            end if
+         end do
+         comment_header_scan = .true.
+         return
+      end do
+   end function comment_header_scan
+
+   pure logical function name_like(tok)
+      character(*), intent(in) :: tok
+
+      integer :: i, n
+      character :: c
+      logical :: has_letter
+
+      name_like = .false.
+      n = len_trim(tok)
+      if (n == 0 .or. n > 64) return
+      if (token_is_real(tok)) return
+
+      has_letter = .false.
+      do i = 1, n
+         c = tok(i:i)
+         select case (c)
+         case ('a':'z', 'A':'Z')
+            has_letter = .true.
+         case ('0':'9', '_', '-', '.', '*')
+         case default
+            return
+         end select
+      end do
+      name_like = has_letter
+   end function name_like
+
    logical function is_skippable(line)
       character(*), intent(in) :: line
 
@@ -404,7 +495,7 @@ contains
       if (.not. is_skippable) is_skippable = line(k:k) == '#'
    end function is_skippable
 
-   logical function token_is_real(tok)
+   pure logical function token_is_real(tok)
       character(*), intent(in) :: tok
 
       real(wp) :: x
