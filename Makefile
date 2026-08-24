@@ -37,8 +37,7 @@ LIB_SRCS := $(SRC_DIR)/version.f90 \
 			$(SRC_DIR)/generators.f90 \
 			$(SRC_DIR)/spectra.f90 \
 			$(SRC_DIR)/hurst.f90 \
-			$(SRC_DIR)/io.f90 \
-			$(SRC_DIR)/eop.f90
+			$(SRC_DIR)/io.f90
 
 LIB_OBJS := $(patsubst $(SRC_DIR)/%.f90,$(OBJ_DIR)/%.o,$(LIB_SRCS))
 LIB      := $(LIB_DIR)/lib$(PROJ_NAME).a
@@ -96,7 +95,6 @@ $(OBJ_DIR)/constants.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/math.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/complex.o: $(OBJ_DIR)/constants.o
 $(OBJ_DIR)/io.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/checks.o
-$(OBJ_DIR)/eop.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/checks.o
 $(OBJ_DIR)/autoreg.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/constants.o $(OBJ_DIR)/checks.o
 $(OBJ_DIR)/stat.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/checks.o
 $(OBJ_DIR)/solvers.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/checks.o
