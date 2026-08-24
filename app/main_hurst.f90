@@ -2,7 +2,6 @@ program main_hurst
    use io, only: read_single_column
    use hurst, only: estimate_hurst_berg, estimate_hurst_yw, estimate_hurst_rs, estimate_hurst_lssd
    use version, only: max_ver_len, ver
-   use checks, only: last_message
    use precision, only: wp
    implicit none
 
