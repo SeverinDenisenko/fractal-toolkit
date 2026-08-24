@@ -124,63 +124,54 @@ contains
    subroutine srfft1d(data, isign, zdata, ierr)
       real(wp), intent(inout) :: data(:)
       integer, intent(in) :: isign
-      complex(wp), optional, target :: zdata(:)
+      complex(wp), intent(inout) :: zdata(:)
       integer, intent(out), optional :: ierr
    
       integer :: n, nh, nq
-      complex(wp) :: w(size(data)/4)
-      complex(wp), dimension(size(data)/4-1) :: h1, h2
-      complex(wp), pointer :: cdata(:)
+      complex(wp), allocatable :: w(:), h1(:), h2(:)
       complex(wp) :: z
-      real(wp) :: c1 = 0.5_wp, c2
+      real(wp) :: c1, c2
     
       n = size(data)
+      allocate(w(n/4), h1(n/4-1), h2(n/4-1))
+
       if (check(is2power(n), 'srfft: n must be a power of 2', ierr=ierr)) return
+      if (check(n / 2 == size(zdata), msg='srfft', ierr=ierr)) return
       nh = n / 2
       nq = n / 4
-    
-      if (present(zdata)) then
-         if (check(n / 2 == size(zdata), msg='srfft', ierr=ierr)) return
-         cdata => zdata
-         if (isign == 1) then
-            cdata = cmplx(data(1:n-1:2), data(2:n:2), kind=wp)
-         end if
-      else
-         allocate(cdata(n / 2))
-         cdata = cmplx(data(1:n-1:2), data(2:n:2), kind=wp)
+      c1 = 0.5_wp
+
+      if (isign == 1) then
+         zdata = cmplx(data(1:n-1:2), data(2:n:2), kind=wp)
       end if
    
       if (isign == 1) then
          c2 = -0.5_wp
-         call sfft1d(cdata, +1)
+         call sfft1d(zdata, +1)
       else
          c2 = 0.5_wp
       end if
 
       w(:) = zroots(sign(n, isign), n/4)
       w(:) = cmplx(-aimag(w), real(w), kind=wp)
-      h1(:) = c1 * (cdata(2:nq) + conjg(cdata(nh:nq+2:-1)))
-      h2(:) = c2 * (cdata(2:nq) - conjg(cdata(nh:nq+2:-1)))
-      cdata(2:nq) = h1 + w(2:nq) * h2
-      cdata(nh:nq+2:-1) = conjg(h1 - w(2:nq) * h2)
-      z = cdata(1)
+      h1(:) = c1 * (zdata(2:nq) + conjg(zdata(nh:nq+2:-1)))
+      h2(:) = c2 * (zdata(2:nq) - conjg(zdata(nh:nq+2:-1)))
+      zdata(2:nq) = h1 + w(2:nq) * h2
+      zdata(nh:nq+2:-1) = conjg(h1 - w(2:nq) * h2)
+      z = zdata(1)
 
       if (isign == 1) then
-         cdata(1) = cmplx(real(z) + aimag(z), real(z) - aimag(z), kind=wp)
+         zdata(1) = cmplx(real(z) + aimag(z), real(z) - aimag(z), kind=wp)
       else
-         cdata(1) = cmplx(c1 * (real(z) + aimag(z)), c1 * (real(z) - aimag(z)), kind=wp)
-         call sfft1d(cdata, -1)
+         zdata(1) = cmplx(c1 * (real(z) + aimag(z)), c1 * (real(z) - aimag(z)), kind=wp)
+         call sfft1d(zdata, -1)
       end if
 
-      if (present(zdata)) then
-         if (isign /= 1) then
-            data(1:n-1:2) = real(cdata)
-            data(2:n:2) = aimag(cdata)
-         end if
-      else
-         data(1:n-1:2) = real(cdata)
-         data(2:n:2) = aimag(cdata)
-         deallocate(cdata)
+      if (isign == -1) then
+         data(1:n-1:2) = real(zdata)
+         data(2:n:2) = aimag(zdata)
       end if
+
+      deallocate(w, h1, h2)
    end subroutine srfft1d
 end module fourier
