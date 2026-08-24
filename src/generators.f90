@@ -11,7 +11,7 @@ module generators
    use stdlib_optval, only: optval
    implicit none
 
-   integer, parameter :: default_seed = 42
+   integer :: default_seed = 42
    real(wp), parameter :: default_sigma = 1.0_wp
    real(wp), parameter :: default_mu = 0.0_wp
 contains
@@ -21,11 +21,10 @@ contains
       real(wp), optional, intent(in) :: sigma
       integer, optional, intent(in) :: seed
 
-      integer :: seed_get
       integer :: n
 
       n = size(array)
-      call random_seed(optval(seed, default_seed), seed_get)
+      call random_seed(optval(seed, default_seed), default_seed)
 
       array(:) = rvs_uniform(optval(mu, default_mu) - optval(sigma, default_sigma) / 2.0_wp, optval(mu, default_mu) + optval(sigma, default_sigma) / 2.0_wp, n)
    end subroutine generate_white
@@ -36,12 +35,11 @@ contains
       real(wp), optional, intent(in) :: sigma
       integer, optional, intent(in) :: seed
 
-      integer :: seed_get
       integer :: n
 
       n = size(array)
 
-      call random_seed(optval(seed, default_seed), seed_get)
+      call random_seed(optval(seed, default_seed), default_seed)
 
       array(:) = rvs_normal(optval(mu, default_mu), optval(sigma, default_sigma), n)
    end subroutine generate_gauss
@@ -135,7 +133,7 @@ contains
 
       l = up2power(size(series))
       allocate(m(l), n(l), rho(l))
-      allocate(rhofft(l), V(l), W(l * 2))
+      allocate(rhofft(l * 2), V(l * 2), W(l * 2))
 
       ! The autocorrelation function of the FGN sequence
       do k = 0,size(rho)-1
@@ -150,16 +148,17 @@ contains
       V = sqrt(rhofft)
 
       call generate_gauss(m, default_mu, default_sigma, seed_in)
-      call generate_gauss(n, default_mu, default_sigma, seed_in)
+      call generate_gauss(n, default_mu, default_sigma, default_seed)
 
+      W(:) = 0.0_wp
       W(1) = V(1) / sqrt(2.0_wp * l) * m(1)
       do j = 2,l
          W(j) = V(j) / sqrt(4.0_wp * l) * (m(j) + cmplx(0.0_wp, 1.0_wp, kind=wp) * n(j))
          W(j + l) = V(j + l) / sqrt(4.0_wp * l) * (m(l - j + 2) - cmplx(0.0_wp, 1.0_wp, kind=wp) * n(l - j + 2))
       end do
-      W(l + 1) = V(1) / sqrt(2.0_wp * l) * n(1)
+      W(l + 1) = V(l + 1) / sqrt(2.0_wp * l) * n(1)
 
-      call fft1d(W, ierr=ierr)
+      call ifft1d(W, ierr=ierr)
       if (present(ierr) .and. ierr /= 0) return
 
       series = l ** (-H) * real(W(1:size(series)))
