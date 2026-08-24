@@ -137,18 +137,20 @@ contains
 
       if (check(is2power(n), 'srfft: n must be a power of 2', ierr=ierr)) return
       if (check(n / 2 == size(zdata), msg='srfft', ierr=ierr)) return
+
       nh = n / 2
       nq = n / 4
-      c1 = 0.5_wp
 
       if (isign == 1) then
          zdata = cmplx(data(1:n-1:2), data(2:n:2), kind=wp)
       end if
    
       if (isign == 1) then
+         c1 = 0.5_wp
          c2 = -0.5_wp
          call sfft1d(zdata, +1)
       else
+         c1 = 0.5_wp
          c2 = 0.5_wp
       end if
 
