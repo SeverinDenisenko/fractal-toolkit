@@ -1,8 +1,11 @@
 module solvers
    use precision, only: wp
-   use stdlib_linalg, only: solve_lstsq, solve, inv
    use checks, only: check
+   use stdlib_linalg, only: solve_lstsq, solve, inv
    implicit none
+
+   private
+   public :: linregress, powerregress
 
  contains
    ! Compute variation for residuals with `m` freedom degrees

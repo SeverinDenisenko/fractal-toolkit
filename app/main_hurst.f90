@@ -1,7 +1,8 @@
 program main_hurst
    use io, only: read_single_column
-   use hurst, only: estimate_hurst_berg, estimate_hurst_yw, rs_analysis
+   use hurst, only: estimate_hurst_berg, estimate_hurst_yw, estimate_hurst_rs, estimate_hurst_lssd
    use version, only: max_ver_len, ver
+   use checks, only: last_message
    use precision, only: wp
    implicit none
 
@@ -10,7 +11,7 @@ program main_hurst
    character(len=max_ver_len) :: v
    real(wp), allocatable :: series(:)
    real(wp) :: H, a, H_err, a_err, sigma2
-   integer :: i, m
+   integer :: i, m, ierr
    logical :: m_provided
 
    m_provided = .false.
@@ -63,7 +64,7 @@ program main_hurst
    print '("     n = ", I8)', size(series)
    print '("     m = ", I8)', m
 
-   call rs_analysis(series, H, H_err, sigma2)
+   call estimate_hurst_rs(series, H, H_err, sigma2)
 
    print '(a)', 'Rescaled Range analysis:'
    print '("     H = ", F6.3)', H
@@ -87,6 +88,14 @@ program main_hurst
    print '("    dH = ", F6.3)', H_err
    print '("    da = ", F6.3)', a_err
    print '("sigma2 = ", F6.3)', sigma2
+
+   call estimate_hurst_lssd(series, 1, 50, H, H_err, ierr=ierr)
+
+   if (ierr == 0) then
+      print '(a)', 'Koutsoyiannis (LSSD) method:'
+      print '("     H = ", F6.3)', H
+      print '("    dH = ", F6.3)', H_err
+   end if
 
 contains
    subroutine print_help()
