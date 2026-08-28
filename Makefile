@@ -26,6 +26,7 @@ LIB_SRCS := $(SRC_DIR)/version.f90 \
 			$(SRC_DIR)/math.f90 \
 			$(SRC_DIR)/checks.f90 \
 			$(SRC_DIR)/stat.f90 \
+			$(SRC_DIR)/interp.f90 \
 			$(SRC_DIR)/autoreg.f90 \
 			$(SRC_DIR)/constants.f90 \
 			$(SRC_DIR)/complex.f90 \
@@ -93,6 +94,7 @@ test: $(TEST_EXES)
 # Explicit module dependencies (for parallel builds)
 $(OBJ_DIR)/constants.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/math.o: $(OBJ_DIR)/precision.o
+$(OBJ_DIR)/interp.o: $(OBJ_DIR)/precision.o
 $(OBJ_DIR)/complex.o: $(OBJ_DIR)/constants.o
 $(OBJ_DIR)/io.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/checks.o
 $(OBJ_DIR)/autoreg.o: $(OBJ_DIR)/precision.o $(OBJ_DIR)/constants.o $(OBJ_DIR)/checks.o

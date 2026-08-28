@@ -15,7 +15,7 @@ contains
    ! i = -1.0: eliminates bias
    ! i = +0.0: the variance of the sample
    ! i = +1.0: minimizes mean squared error for the normal distribution
-   ! i = +1.1: mostly eliminates bias in unbiased estimation of standard deviation for the normal distribution
+   ! i = +1.5: mostly eliminates bias in unbiased estimation of standard deviation for the normal distribution
    real(wp) function variance(S, i) result(sigma2)
       real(wp), intent(in) :: S(:)
       real(wp), optional, intent(in) :: i
