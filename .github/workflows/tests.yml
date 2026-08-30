@@ -26,9 +26,10 @@ jobs:
       - name: Install stdlib
         run: |
           git clone --depth=1 https://github.com/fortran-lang/stdlib /tmp/stdlib
-          mkdir -p /tmp/stdlib/build
           cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=off -S /tmp/stdlib -B /tmp/stdlib/build
-          cmake --install /tmp/stdlib/build && ldconfig || true
+          cmake --build /tmp/stdlib/build -j 8
+          cmake --install /tmp/stdlib/build
+          ldconfig || true
 
       - name: Build
         run: make
