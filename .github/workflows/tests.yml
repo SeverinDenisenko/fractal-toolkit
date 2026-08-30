@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y vim gcc g++ gdb make cmake gfortran libblas-dev liblapack-dev pkgconf git wget python3 python3-pip
+
+      - name: Install fypp
+        run: |
+          git clone --depth=1 https://github.com/aradi/fypp.git /tmp/fypp
+          cp /tmp/fypp/src/fypp.py /usr/local/bin/fypp
+
+      - name: Install stdlib
+        run: |
+          git clone --depth=1 https://github.com/fortran-lang/stdlib /tmp/stdlib
+          mkdir -p /tmp/stdlib/build
+          cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=off -S /tmp/stdlib -B /tmp/stdlib/build
+          cmake --install /tmp/stdlib/build && ldconfig || true
+
+      - name: Build
+        run: make
+
+      - name: Test
+        run: make test
