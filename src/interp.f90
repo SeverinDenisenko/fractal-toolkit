@@ -55,7 +55,6 @@ contains
       call compute_coefficients(X, Y, h, c, b, d)
 
       deallocate(main_diag, sub_diag, super_diag, rhs, h)
-
    end subroutine cubic_solve
 
    subroutine construct_tridiagonal(X, Y, h, main_diag, sub_diag, super_diag, rhs)
@@ -117,7 +116,6 @@ contains
          i = n - j
          solution(i) = (solution(i) - super_diag(i) * solution(i+1)) / main_diag(i)
       end do
-
    end subroutine solve_tridiagonal
 
    subroutine compute_coefficients(X, Y, h, c, b, d)

@@ -119,6 +119,13 @@ Parameters `pi`, `twopi`.
 | `linregress(x, y, k, a [, sigma2, k_err, a_err, ierr])` | Ordinary least squares fit `y = k*x + a` with residuals variance and parameter errors |
 | `powerregress(x, y, a, c [, sigma2, a_err, c_err, ierr])` | Power-law fit `y = c*x^a` (log-log least squares); requires positive data |
 
+### Module `interp`
+| Subroutine | Description |
+|---|---|
+| `cubic_resample(X, Y, X1, Y1 [, ierr])` | Cubic spline interpolation of `Y` evaluated at new points `X1` into `Y1` |
+| `cubic_solve(X, Y, b, c, d [, ierr])` | Computes cubic spline coefficients `b`, `c`, `d` |
+| `cubic_interp(X, Y, b, c, d, X1, Y1 [, ierr])` | Evaluates cubic spline at points `X1` using precomputed coefficients |
+
 ### Module `generators`
 | Subroutine | Description |
 |---|---|
