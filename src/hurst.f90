@@ -1,7 +1,7 @@
 module hurst
    use precision, only: wp
    use solvers, only: powerregress
-   use spectra, only: berg_psd, yw_psd, psd_size
+   use spectra, only: complex_berg_psd, complex_yw_psd, psd_size
    use stat, only: mean, variance
    use checks, only: check
    use math, only: log2
@@ -12,6 +12,8 @@ module hurst
    private
    public :: slope_to_hurst, estimate_hurst_psd, estimate_hurst_berg, estimate_hurst_yw
    public :: rs_chart_size, rs_chart, estimate_hurst_rs, estimate_hurst_lssd
+   public :: complex_estimate_hurst_psd, complex_estimate_hurst_berg, complex_estimate_hurst_yw
+   public :: complex_rs_chart, complex_estimate_hurst_rs
 
 contains
    ! Compute Hurst expoenent from PSD slope `a` where PSD~1/f^a
@@ -25,7 +27,7 @@ contains
       end if
    end function slope_to_hurst
 
-   subroutine estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr)
+   subroutine complex_estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr)
       real(wp), intent(in) :: f(:), P(:)
       real(wp), intent(out) :: H, a, H_err, a_err, sigma2
       integer, intent(out), optional :: ierr
@@ -44,7 +46,36 @@ contains
       a = -a
       H = slope_to_hurst(a)
       H_err = a_err / 2.0_wp
+   end subroutine complex_estimate_hurst_psd
+
+   subroutine estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr)
+      real(wp), intent(in) :: f(:), P(:)
+      real(wp), intent(out) :: H, a, H_err, a_err, sigma2
+      integer, intent(out), optional :: ierr
+
+      call complex_estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
    end subroutine estimate_hurst_psd
+
+   subroutine complex_estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2, ierr)
+      complex(wp), intent(in) :: series(:)
+      integer, intent(in) :: m
+      real(wp), intent(out) :: H, a, H_err, a_err, sigma2
+      integer, intent(out), optional :: ierr
+
+      real(wp), allocatable :: P(:), f(:)
+      integer :: n
+
+      n = size(series)
+
+      allocate(f(psd_size(n)), P(psd_size(n)))
+
+      call complex_berg_psd(f, P, series, 1.0_wp, m, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
+      call complex_estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
+
+      deallocate(f, P)
+   end subroutine complex_estimate_hurst_berg
 
    subroutine estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2, ierr)
       real(wp), intent(in) :: series(:)
@@ -52,23 +83,16 @@ contains
       real(wp), intent(out) :: H, a, H_err, a_err, sigma2
       integer, intent(out), optional :: ierr
 
-      real(wp), allocatable :: P(:), f(:)
-      integer :: n
+      complex(wp), allocatable :: cseries(:)
 
-      n = size(series)
-
-      allocate(f(psd_size(n)), P(psd_size(n)))
-
-      call berg_psd(f, P, series, 1.0_wp, m, ierr=ierr)
-      if (present(ierr) .and. ierr /= 0) return
-
-      call estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
-
-      deallocate(f, P)
+      allocate(cseries(size(series)))
+      cseries = cmplx(series, 0.0_wp, kind=wp)
+      call complex_estimate_hurst_berg(cseries, m, H, a, H_err, a_err, sigma2, ierr=ierr)
+      deallocate(cseries)
    end subroutine estimate_hurst_berg
 
-   subroutine estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2, ierr)
-      real(wp), intent(in) :: series(:)
+   subroutine complex_estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2, ierr)
+      complex(wp), intent(in) :: series(:)
       integer, intent(in) :: m
       real(wp), intent(out) :: H, a, H_err, a_err, sigma2
       integer, intent(out), optional :: ierr
@@ -80,12 +104,26 @@ contains
 
       allocate(f(psd_size(n)), P(psd_size(n)))
 
-      call yw_psd(f, P, series, 1.0_wp, m, ierr=ierr)
+      call complex_yw_psd(f, P, series, 1.0_wp, m, ierr=ierr)
       if (present(ierr) .and. ierr /= 0) return
 
-      call estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
+      call complex_estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
 
       deallocate(f, P)
+   end subroutine complex_estimate_hurst_yw
+
+   subroutine estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2, ierr)
+      real(wp), intent(in) :: series(:)
+      integer, intent(in) :: m
+      real(wp), intent(out) :: H, a, H_err, a_err, sigma2
+      integer, intent(out), optional :: ierr
+
+      complex(wp), allocatable :: cseries(:)
+
+      allocate(cseries(size(series)))
+      cseries = cmplx(series, 0.0_wp, kind=wp)
+      call complex_estimate_hurst_yw(cseries, m, H, a, H_err, a_err, sigma2, ierr=ierr)
+      deallocate(cseries)
    end subroutine estimate_hurst_yw
 
    integer function rs_chart_size(n) result(m)
@@ -93,53 +131,67 @@ contains
       m = int(log2(real(n, wp)))
    end function rs_chart_size
 
-   subroutine rs_process_chunk(data, n, n_real, range_val, std_dev, mean_val)
-      real(wp), intent(in) :: data(:)
+   subroutine complex_rs_process_chunk(data, n, n_real, range_val, std_dev, mean_val)
+      complex(wp), intent(in) :: data(:)
       integer, intent(in) :: n
       real(wp), intent(in) :: n_real
-      real(wp), intent(out) :: range_val, std_dev, mean_val
+      complex(wp), intent(out) :: mean_val
+      real(wp), intent(out) :: range_val, std_dev
 
-      real(wp) :: sum_val, sum_sq_val, cum_sum, cum_max, cum_min
-      real(wp) :: variance_val
-      integer :: k
+      complex(wp), allocatable :: cum(:)
+      real(wp) :: d2, r2, sum_sq_val, variance_val, dx, dy
+      complex(wp) :: sum_dev
+      integer :: k, j
 
-      sum_val = sum(data)
-      mean_val = sum_val / n_real
+      mean_val = sum(data) / n_real
 
-      cum_sum = 0.0_wp
-      cum_max = -huge(1.0_wp)
-      cum_min = huge(1.0_wp)
-      sum_val = 0.0_wp
-      sum_sq_val = 0.0_wp
-
-      do k = 1, n
-         cum_sum = cum_sum + (data(k) - mean_val)
-         cum_max = max(cum_max, cum_sum)
-         cum_min = min(cum_min, cum_sum)
-
-         sum_val = sum_val + (data(k) - mean_val)
-         sum_sq_val = sum_sq_val + (data(k) - mean_val)**2
+      ! Cumulative deviations C_k = sum_{m<=k} (data(m) - mean_val)
+      allocate(cum(n))
+      cum(1) = data(1) - mean_val
+      do k = 2, n
+         cum(k) = cum(k - 1) + (data(k) - mean_val)
       end do
 
-      range_val = cum_max - cum_min
+      ! Range as the diameter of the cumulative walk in the complex plane.
+      ! For real data this reduces exactly to max(C_k) - min(C_k).
+      r2 = 0.0_wp
+      do j = 1, n - 1
+         do k = j + 1, n
+            dx = real(cum(k) - cum(j), wp)
+            dy = aimag(cum(k) - cum(j))
+            d2 = dx * dx + dy * dy
+            if (d2 > r2) r2 = d2
+         end do
+      end do
+      range_val = sqrt(r2)
+
+      sum_dev = (0.0_wp, 0.0_wp)
+      sum_sq_val = 0.0_wp
+      do k = 1, n
+         sum_dev = sum_dev + (data(k) - mean_val)
+         sum_sq_val = sum_sq_val + abs(data(k) - mean_val)**2
+      end do
 
       if (n > 1) then
-         variance_val = (sum_sq_val - sum_val**2 / n_real) / (n_real - 1.0_wp)
+         variance_val = (sum_sq_val - abs(sum_dev)**2 / n_real) / (n_real - 1.0_wp)
          std_dev = sqrt(max(variance_val, 0.0_wp))
       else
          std_dev = 0.0_wp
       endif
-   end subroutine rs_process_chunk
 
-   subroutine rs_chart(series, RS, N, ierr)
-      real(wp), intent(in) :: series(:)
+      deallocate(cum)
+   end subroutine complex_rs_process_chunk
+
+   subroutine complex_rs_chart(series, RS, N, ierr)
+      complex(wp), intent(in) :: series(:)
       real(wp), intent(out) :: RS(:), N(:)
       integer, intent(out), optional :: ierr
 
       integer :: i, j, n_chunks, n_curr
       integer :: start_idx, end_idx
       real(wp), allocatable :: cumdiv(:), stddiv(:)
-      real(wp) :: R, mean_val
+      complex(wp) :: mean_val
+      real(wp) :: R
       real(wp) :: n_curr_real
 
       N = [(2 ** i, i = 1, rs_chart_size(size(series)))]
@@ -160,7 +212,7 @@ contains
 
             if (end_idx > size(series)) exit
 
-            call rs_process_chunk(series(start_idx:end_idx), n_curr, n_curr_real, R, stddiv(i), mean_val)
+            call complex_rs_process_chunk(series(start_idx:end_idx), n_curr, n_curr_real, R, stddiv(i), mean_val)
 
             if (stddiv(i) > 0.0_wp) then
                cumdiv(i) = R / stddiv(i)
@@ -173,10 +225,23 @@ contains
 
          deallocate(cumdiv, stddiv)
       end do
+   end subroutine complex_rs_chart
+
+   subroutine rs_chart(series, RS, N, ierr)
+      real(wp), intent(in) :: series(:)
+      real(wp), intent(out) :: RS(:), N(:)
+      integer, intent(out), optional :: ierr
+
+      complex(wp), allocatable :: cseries(:)
+
+      allocate(cseries(size(series)))
+      cseries = cmplx(series, 0.0_wp, kind=wp)
+      call complex_rs_chart(cseries, RS, N, ierr=ierr)
+      deallocate(cseries)
    end subroutine rs_chart
 
-   subroutine estimate_hurst_rs(series, H, H_err, sigma2, ierr)
-      real(wp), intent(in) :: series(:)
+   subroutine complex_estimate_hurst_rs(series, H, H_err, sigma2, ierr)
+      complex(wp), intent(in) :: series(:)
       real(wp), intent(out) :: H, H_err, sigma2
       integer, intent(out), optional :: ierr
 
@@ -186,13 +251,26 @@ contains
       m = rs_chart_size(size(series))
       allocate(RS(m), N(m))
 
-      call rs_chart(series, RS, N, ierr)
+      call complex_rs_chart(series, RS, N, ierr)
       if (present(ierr) .and. ierr /= 0) return
 
       call powerregress(N, RS, H, c, sigma2, H_err, c_err, ierr=ierr)
       if (present(ierr) .and. ierr /= 0) return
 
       deallocate(RS, N)
+   end subroutine complex_estimate_hurst_rs
+
+   subroutine estimate_hurst_rs(series, H, H_err, sigma2, ierr)
+      real(wp), intent(in) :: series(:)
+      real(wp), intent(out) :: H, H_err, sigma2
+      integer, intent(out), optional :: ierr
+
+      complex(wp), allocatable :: cseries(:)
+
+      allocate(cseries(size(series)))
+      cseries = cmplx(series, 0.0_wp, kind=wp)
+      call complex_estimate_hurst_rs(cseries, H, H_err, sigma2, ierr=ierr)
+      deallocate(cseries)
    end subroutine estimate_hurst_rs
 
    real(wp) function cm_lssd(m, n, H) result(c)
