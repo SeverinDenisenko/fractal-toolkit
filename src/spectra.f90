@@ -38,7 +38,6 @@ contains
    end subroutine freq_nyquist
 
    ! Variance of complex series `S` with correction `i` added to sample size
-   ! (same convention as `stat::variance`)
    real(wp) function complex_variance(S, i) result(sigma2)
       complex(wp), intent(in) :: S(:)
       real(wp), intent(in) :: i
