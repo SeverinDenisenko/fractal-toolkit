@@ -1,7 +1,7 @@
 module hurst
    use precision, only: wp
    use solvers, only: powerregress
-   use spectra, only: complex_berg_psd, complex_yw_psd, psd_size
+   use spectra, only: berg_psd, complex_yw_psd, psd_size
    use stat, only: mean, variance
    use checks, only: check
    use math, only: log2
@@ -12,7 +12,7 @@ module hurst
    private
    public :: slope_to_hurst, estimate_hurst_psd, estimate_hurst_berg, estimate_hurst_yw
    public :: rs_chart_size, rs_chart, estimate_hurst_rs, estimate_hurst_lssd
-   public :: complex_estimate_hurst_psd, complex_estimate_hurst_berg, complex_estimate_hurst_yw
+   public :: complex_estimate_hurst_psd, complex_estimate_hurst_yw
    public :: complex_rs_chart, complex_estimate_hurst_rs
 
 contains
@@ -56,8 +56,8 @@ contains
       call complex_estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
    end subroutine estimate_hurst_psd
 
-   subroutine complex_estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2, ierr)
-      complex(wp), intent(in) :: series(:)
+   subroutine estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2, ierr)
+      real(wp), intent(in) :: series(:)
       integer, intent(in) :: m
       real(wp), intent(out) :: H, a, H_err, a_err, sigma2
       integer, intent(out), optional :: ierr
@@ -69,26 +69,12 @@ contains
 
       allocate(f(psd_size(n)), P(psd_size(n)))
 
-      call complex_berg_psd(f, P, series, 1.0_wp, m, ierr=ierr)
+      call berg_psd(f, P, series, 1.0_wp, m, ierr=ierr)
       if (present(ierr) .and. ierr /= 0) return
 
-      call complex_estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
+      call estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2, ierr=ierr)
 
       deallocate(f, P)
-   end subroutine complex_estimate_hurst_berg
-
-   subroutine estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2, ierr)
-      real(wp), intent(in) :: series(:)
-      integer, intent(in) :: m
-      real(wp), intent(out) :: H, a, H_err, a_err, sigma2
-      integer, intent(out), optional :: ierr
-
-      complex(wp), allocatable :: cseries(:)
-
-      allocate(cseries(size(series)))
-      cseries = cmplx(series, 0.0_wp, kind=wp)
-      call complex_estimate_hurst_berg(cseries, m, H, a, H_err, a_err, sigma2, ierr=ierr)
-      deallocate(cseries)
    end subroutine estimate_hurst_berg
 
    subroutine complex_estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2, ierr)

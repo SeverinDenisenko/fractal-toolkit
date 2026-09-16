@@ -71,17 +71,16 @@ contains
       deallocate(cphi, cS)
    end subroutine yw_ar_coeff
 
-   ! Calculate AR coefficients `phi` for complex time series `S` by using Burg method
+   ! Calculate AR coefficients `phi` for time series `S` by using Burg method
    ! AR coefficients are not negated and one is not present in the front
-   subroutine complex_burg_ar_coeff(phi, S)
-      complex(wp), intent(out) :: phi(:)
-      complex(wp), intent(in) :: S(:)
+   subroutine burg_ar_coeff(phi, S)
+      real(wp), intent(out) :: phi(:)
+      real(wp), intent(in) :: S(:)
 
       integer :: n, p, k, i
-      complex(wp), allocatable :: f(:), b(:) ! Forward and backward prediction errors
-      complex(wp) :: ref_coef, f_old, num
-      real(wp) :: den
-      complex(wp), allocatable :: a(:)
+      real(wp), allocatable :: f(:), b(:) ! Forward and backward prediction errors
+      real(wp) :: ref_coef, f_old, num, den
+      real(wp), allocatable :: a(:)
 
       p = size(phi)
       n = size(S)
@@ -91,22 +90,22 @@ contains
       b = S
 
       allocate(a(0:p))
-      a(1:p) = (0.0_wp, 0.0_wp)
-      a(0) = (1.0_wp, 0.0_wp)
+      a(1:p) = 0.0_wp
+      a(0) = 1.0_wp
 
       do k = 1, p
          ! Reflection coefficient
-         num = sum(f(k+1:n) * conjg(b(k:n-1)))
-         den = sum(abs(f(k+1:n))**2 + abs(b(k:n-1))**2)
+         num = sum(f(k+1:n)*b(k:n-1))
+         den = sum(f(k+1:n)**2 + b(k:n-1)**2)
          if (den < tiny(den)) then
-            ref_coef = (0.0_wp, 0.0_wp)
+            ref_coef = 0.0_wp
          else
             ref_coef = -2.0_wp * num / den
          end if
 
          ! Levinson recursion
          do i = 1, k-1
-            a(i) = a(i) + ref_coef * conjg(a(k-i))
+            a(i) = a(i) + ref_coef * a(k-i)
          end do
          a(k) = ref_coef
 
@@ -115,7 +114,7 @@ contains
             do i = n, k+1, -1
                f_old = f(i)
                f(i)  = f_old + ref_coef * b(i-1)
-               b(i)  = b(i-1) + conjg(ref_coef) * f_old
+               b(i)  = b(i-1) + ref_coef * f_old
             end do
          end if
       end do
@@ -123,22 +122,6 @@ contains
       phi = -a(1:p)
 
       deallocate(f, b, a)
-   end subroutine complex_burg_ar_coeff
-
-   ! Calculate AR coefficients `phi` for real time series `S` by using Burg method.
-   ! Real data is treated as complex with zero imaginary part.
-   ! AR coefficients are not negated and one is not present in the front
-   subroutine burg_ar_coeff(phi, S)
-      real(wp), intent(out) :: phi(:)
-      real(wp), intent(in) :: S(:)
-
-      complex(wp), allocatable :: cphi(:), cS(:)
-
-      allocate(cphi(size(phi)), cS(size(S)))
-      cS = cmplx(S, 0.0_wp, kind=wp)
-      call complex_burg_ar_coeff(cphi, cS)
-      phi = real(cphi, wp)
-      deallocate(cphi, cS)
    end subroutine burg_ar_coeff
 
    ! Compute prediction of complex timeseries `S` for AR model with coefficients `phi` at index `i`

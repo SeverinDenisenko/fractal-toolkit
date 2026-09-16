@@ -94,7 +94,6 @@ Parameters `pi`, `twopi`.
 | `yw_ar_coeff(phi, S [, ierr])` | AR coefficients via least-squares Yule-Walker equations |
 | `complex_yw_ar_coeff(phi, S [, ierr])` | Yule-Walker AR coefficients for complex series `S` |
 | `burg_ar_coeff(phi, S)` | AR coefficients via Burg method |
-| `complex_burg_ar_coeff(phi, S)` | Burg AR coefficients for complex series `S` |
 | `ar_predict(phi, S, i)` | One-step-ahead AR prediction of `S(i)` from previous values |
 | `complex_ar_predict(phi, S, i)` | One-step-ahead AR prediction for complex data |
 | `ar_freq_response(phi, f, H [, ierr])` | Frequency response `H(ω)` of the AR filter at normalized frequencies `f` |
@@ -109,7 +108,6 @@ Parameters `pi`, `twopi`.
 | `ar_psd(f, P, S, dt, phi [, ierr])` | Parametric power spectral density from given AR coefficients |
 | `complex_ar_psd(f, P, S, dt, phi [, ierr])` | PSD from complex AR coefficients |
 | `berg_psd(f, P, S, dt, m [, ierr])` | PSD estimated by Burg method of order `m` |
-| `complex_berg_psd(f, P, S, dt, m [, ierr])` | Burg PSD for complex series `S` of order `m` |
 | `yw_psd(f, P, S, dt, m [, ierr])` | PSD estimated by Yule-Walker method of order `m` |
 | `complex_yw_psd(f, P, S, dt, m [, ierr])` | Yule-Walker PSD for complex series `S` of order `m` |
 
@@ -150,7 +148,6 @@ Parameters `pi`, `twopi`.
 | `estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2 [, ierr])` | Hurst estimate from precomputed power spectrum |
 | `complex_estimate_hurst_psd(f, P, H, a, H_err, a_err, sigma2 [, ierr])` | Hurst estimate from precomputed complex spectrum |
 | `estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2 [, ierr])` | Hurst exponent via Burg PSD of order `m` |
-| `complex_estimate_hurst_berg(series, m, H, a, H_err, a_err, sigma2 [, ierr])` | Hurst exponent via Burg PSD for complex series |
 | `estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2 [, ierr])` | Hurst exponent via Yule-Walker PSD of order `m` |
 | `complex_estimate_hurst_yw(series, m, H, a, H_err, a_err, sigma2 [, ierr])` | Hurst exponent via Yule-Walker PSD for complex series |
 | `rs_chart_size(n)` | Length of R/S chart arrays for series of size `n` |
@@ -162,4 +159,4 @@ Parameters `pi`, `twopi`.
 
 All procedures follow the same error convention: pass an optional `integer ierr` argument to receive an error code instead of program termination.
 
-The non-prefixed procedures accept real series and are implemented as thin bindings that cast the input to complex (zero imaginary part) and call the corresponding `complex_` variant. Results for real input are identical to the underlying complex algorithm.
+Most non-prefixed procedures accept real series and are implemented as thin bindings that cast the input to complex (zero imaginary part) and call the corresponding `complex_` variant. Results for real input are identical to the underlying complex algorithm. Exceptions: `burg_ar_coeff` and `berg_psd` use a direct real-only implementation.

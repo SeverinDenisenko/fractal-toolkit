@@ -1,6 +1,6 @@
 module spectra
    use precision, only: wp
-   use autoreg, only: complex_yw_ar_coeff, complex_burg_ar_coeff, complex_ar_freq_response
+   use autoreg, only: complex_yw_ar_coeff, complex_ar_freq_response, burg_ar_coeff
    use checks, only: check
    implicit none
 
@@ -93,40 +93,23 @@ contains
       deallocate(cS, cphi)
    end subroutine ar_psd
 
-   ! Calculate power spectrum density of a complex series `S` with even time step `dt` using Berg method of order `m`
-   subroutine complex_berg_psd(f, P, S, dt, m, ierr)
-      real(wp), intent(out) :: f(:), P(:)
-      complex(wp), intent(in) :: S(:)
-      real(wp), intent(in) :: dt
-      integer, intent(in) :: m
-      integer, intent(out), optional :: ierr
-
-      complex(wp), allocatable :: phi(:)
-
-      allocate(phi(m))
-
-      call complex_burg_ar_coeff(phi, S)
-
-      call complex_ar_psd(f, P, S, dt, phi, ierr=ierr)
-      if (present(ierr) .and. ierr /= 0) return
-
-      deallocate(phi)
-   end subroutine complex_berg_psd
-
-   ! Calculate power spectrum density of a series `S` with even time step `dt` using Berg method of order `m`.
-   ! Real data is treated as complex with zero imaginary part.
+   ! Calculate power spectrum density of a series `S` with even time step `dt` using Berg method of order `m`
    subroutine berg_psd(f, P, S, dt, m, ierr)
       real(wp), intent(out) :: f(:), P(:)
       real(wp), intent(in) :: S(:), dt
       integer, intent(in) :: m
       integer, intent(out), optional :: ierr
 
-      complex(wp), allocatable :: cS(:)
+      real(wp), allocatable :: phi(:)
 
-      allocate(cS(size(S)))
-      cS = cmplx(S, 0.0_wp, kind=wp)
-      call complex_berg_psd(f, P, cS, dt, m, ierr=ierr)
-      deallocate(cS)
+      allocate(phi(m))
+
+      call burg_ar_coeff(phi, S)
+
+      call ar_psd(f, P, S, dt, phi, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
+      deallocate(phi)
    end subroutine berg_psd
 
    ! Calculate power spectrum density of a complex series `S` with even time step `dt` using Yule-Walker method of order `m`
