@@ -1,7 +1,8 @@
 module spectra
    use precision, only: wp
-   use autoreg, only: complex_yw_ar_coeff, complex_ar_freq_response, burg_ar_coeff
+   use autoreg, only: complex_yw_ar_coeff, complex_ar_freq_response, burg_ar_coeff, ar_freq_response
    use checks, only: check
+   use stat, only: variance
    implicit none
 
 contains
@@ -80,17 +81,32 @@ contains
    end subroutine complex_ar_psd
 
    subroutine ar_psd(f, P, S, dt, phi, ierr)
-      real(wp), intent(out) :: P(:), f(:)
-      real(wp), intent(in) :: S(:), phi(:), dt
+      real(wp), intent(out) :: P(:)
+      real(wp), intent(out) :: f(:)
+      real(wp), intent(in) :: S(:)
+      real(wp), intent(in) :: phi(:)
+      real(wp), intent(in) :: dt
       integer, intent(out), optional :: ierr
 
-      complex(wp), allocatable :: cS(:), cphi(:)
+      complex(wp), allocatable :: H(:)
 
-      allocate(cS(size(S)), cphi(size(phi)))
-      cS = cmplx(S, 0.0_wp, kind=wp)
-      cphi = cmplx(phi, 0.0_wp, kind=wp)
-      call complex_ar_psd(f, P, cS, dt, cphi, ierr=ierr)
-      deallocate(cS, cphi)
+      if (check(size(S) > size(phi), msg="ar_psd: size(S) must be larger then size(phi)", ierr=ierr)) return
+      if (check(size(f) == psd_size(size(S)), msg="ar_psd: size missmatch", ierr=ierr)) return
+      if (check(size(P) == psd_size(size(S)), msg="ar_psd: size missmatch", ierr=ierr)) return
+
+      allocate(H(size(P)))
+
+      ! Calculate the frequency response
+      call freq_nyquist(f, dt)
+      call ar_freq_response(phi, f, H, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
+      ! Calculate the PSD
+      P = abs(H) ** 2
+      P = P / (f(2) - f(1))
+      P = P / sum(P) * variance(S, i=0.0_wp)
+
+      deallocate(H)
    end subroutine ar_psd
 
    ! Calculate power spectrum density of a series `S` with even time step `dt` using Berg method of order `m`
@@ -105,7 +121,7 @@ contains
       allocate(phi(m))
 
       call burg_ar_coeff(phi, S)
-
+   
       call ar_psd(f, P, S, dt, phi, ierr=ierr)
       if (present(ierr) .and. ierr /= 0) return
 
