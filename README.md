@@ -159,6 +159,9 @@ Parameters `pi`, `twopi`.
 | `dfa_chart_size(n)` | Number of DFA chart points for series of size `n` (box sizes N = 4, 8, ...) |
 | `dfa_chart(series, F, N [, ierr])` | Detrended Fluctuation Analysis chart of fluctuation `F` over box sizes `N` |
 | `estimate_hurst_dfa(series, H, H_err, sigma2 [, ierr])` | Hurst exponent via Detrended Fluctuation Analysis |
+| `tta_chart_size(n)` | Number of TTA chart points for series of size `n` (lags τ = 1, ..., 10) |
+| `tta_chart(series, S, T [, ierr])` | Triangles Total Areas chart of total triangle area `S` over lags `T` |
+| `estimate_hurst_tta(series, H, H_err, sigma2 [, ierr])` | Hurst exponent via Triangles Total Areas (TTA) method |
 
 All procedures follow the same error convention: pass an optional `integer ierr` argument to receive an error code instead of program termination.
 

@@ -15,6 +15,7 @@ module hurst
    public :: complex_estimate_hurst_psd, complex_estimate_hurst_yw
    public :: complex_rs_chart, complex_estimate_hurst_rs
    public :: dfa_chart_size, dfa_chart, estimate_hurst_dfa
+   public :: tta_chart_size, tta_chart, estimate_hurst_tta
 
 contains
    ! Compute Hurst expoenent from PSD slope `a` where PSD~1/f^a
@@ -346,6 +347,73 @@ contains
 
       deallocate(F, N)
    end subroutine estimate_hurst_dfa
+
+   ! Triangles Total Areas (TTA) method (Lotfalinezhad & Maleki, 2020):
+   ! profile Y_i = sum_{t<=i} (X_t - xbar), total triangle area over lag tau
+   ! S(tau) = (tau/2) * sum_i |Y_{i+2tau} - 2Y_{i+tau} + Y_i| ~ c * tau^H
+   integer function tta_chart_size(n) result(m)
+      integer, intent(in) :: n
+
+      m = min(10, (n - 1) / 2)
+   end function tta_chart_size
+
+   subroutine tta_chart(series, S, T, ierr)
+      real(wp), intent(in) :: series(:)
+      real(wp), intent(out) :: S(:), T(:)
+      integer, intent(out), optional :: ierr
+
+      integer :: i, tau, npts, n_lags, k
+      real(wp), allocatable :: Y(:)
+      real(wp) :: xbar, stau
+
+      npts = size(series)
+      n_lags = tta_chart_size(npts)
+
+      if (check(n_lags > 0, msg="tta_chart: series too short", ierr=ierr)) return
+      if (check(size(T) == n_lags, msg="tta_chart: size mismatch in T", ierr=ierr)) return
+      if (check(size(S) == n_lags, msg="tta_chart: size mismatch in S", ierr=ierr)) return
+
+      T = [(real(tau, wp), tau = 1, n_lags)]
+
+      allocate(Y(npts))
+      xbar = mean(series)
+      Y(1) = series(1) - xbar
+      do i = 2, npts
+         Y(i) = Y(i - 1) + series(i) - xbar
+      end do
+
+      do tau = 1, n_lags
+         k = (npts - 1) / (2 * tau)
+         stau = 0.0_wp
+         do i = 1, k
+            stau = stau + abs(Y(2 * (i - 1) * tau + 1 + 2 * tau) - 2.0_wp * Y(2 * (i - 1) * tau + 1 + tau) + Y(2 * (i - 1) * tau + 1))
+         end do
+         S(tau) = real(tau, wp) * stau / 2.0_wp
+      end do
+
+      deallocate(Y)
+   end subroutine tta_chart
+
+   subroutine estimate_hurst_tta(series, H, H_err, sigma2, ierr)
+      real(wp), intent(in) :: series(:)
+      real(wp), intent(out) :: H, H_err, sigma2
+      integer, intent(out), optional :: ierr
+
+      integer :: m
+      real(wp), allocatable :: S(:), T(:)
+      real(wp) :: c, c_err
+
+      m = tta_chart_size(size(series))
+      allocate(S(m), T(m))
+
+      call tta_chart(series, S, T, ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
+      call powerregress(T, S, H, c, sigma2, H_err, c_err, ierr=ierr)
+      if (present(ierr) .and. ierr /= 0) return
+
+      deallocate(S, T)
+   end subroutine estimate_hurst_tta
 
    real(wp) function cm_lssd(m, n, H) result(c)
       integer, intent(in) :: m, n
