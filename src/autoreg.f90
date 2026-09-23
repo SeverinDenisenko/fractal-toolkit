@@ -150,19 +150,32 @@ contains
    end function ar_predict
 
    ! Calculate frequency response `H` of an AR filter `phi` on frequencies `f` (0 to 1)
-   ! Real data is treated as complex with zero imaginary part.
    subroutine ar_freq_response(phi, f, H, ierr)
       real(wp), intent(in) :: phi(:)
       real(wp), intent(in) :: f(:)
       complex(wp), intent(out) :: H(:)
       integer, intent(out), optional :: ierr
 
-      complex(wp), allocatable :: cphi(:)
+      integer :: p, n
+      integer :: i, k
+      real(wp) :: omega
+      complex(wp) :: D
 
-      allocate(cphi(size(phi)))
-      cphi = cmplx(phi, 0.0_wp, kind=wp)
-      call complex_ar_freq_response(cphi, f, H, ierr=ierr)
-      deallocate(cphi)
+      p = size(phi)
+      n = size(f)
+
+      if (check(n == size(H), msg="ar_freq_response: size mismatch", ierr=ierr)) return
+
+      do i = 1, n
+         omega = f(i) * 2.0_wp * pi
+
+         D = cmplx(1.0_wp, 0.0_wp, kind=wp)
+         do k = 1, p
+            D = D - phi(k) * exp(-cmplx(0.0_wp, 1.0_wp, kind=wp) * k * omega)
+         end do
+
+         H(i) = cmplx(1.0_wp, 0.0_wp, kind=wp) / D
+      end do
    end subroutine ar_freq_response
 
    ! Calculate frequency response `H` of a complex AR filter `phi` on frequencies `f` (0 to 1)
