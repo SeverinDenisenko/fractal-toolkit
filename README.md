@@ -156,6 +156,9 @@ Parameters `pi`, `twopi`.
 | `estimate_hurst_rs(series, H, H_err, sigma2 [, ierr])` | Hurst exponent via rescaled range (R/S) analysis |
 | `complex_estimate_hurst_rs(series, H, H_err, sigma2 [, ierr])` | Hurst exponent via R/S analysis for complex series |
 | `estimate_hurst_lssd(X, p, q, H, H_err [, eps, maxiter] [, ierr])` | Hurst exponent via Koutsoyiannis Least Squares Standard Deviation estimator |
+| `dfa_chart_size(n)` | Number of DFA chart points for series of size `n` (box sizes N = 4, 8, ...) |
+| `dfa_chart(series, F, N [, ierr])` | Detrended Fluctuation Analysis chart of fluctuation `F` over box sizes `N` |
+| `estimate_hurst_dfa(series, H, H_err, sigma2 [, ierr])` | Hurst exponent via Detrended Fluctuation Analysis |
 
 All procedures follow the same error convention: pass an optional `integer ierr` argument to receive an error code instead of program termination.
 

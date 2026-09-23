@@ -38,6 +38,4 @@ program spectra_test
    call check(maxval(P) > 0.5_wp)
 
    deallocate(P, f)
-
-   print '(a)', "spectra_test passed"
 end program spectra_test
